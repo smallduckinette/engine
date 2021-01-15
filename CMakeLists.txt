@@ -1,5 +1,6 @@
 add_library(
   engine
+  SHARED
   adh/animation.cpp
   adh/camera.cpp
   adh/context.cpp
@@ -10,35 +11,23 @@ add_library(
   adh/texture.cpp
   adh/transform.cpp
   core/json_utils.cpp
-  entity/entityfactory.cpp)
+  entity/entityfactory.cpp
+  gltf/asset.cpp
+  gltf/builder.cpp)
 
 target_include_directories(
   engine
-  PRIVATE
+  PUBLIC
   .)
 
 target_link_libraries(
   engine
-  PRIVATE
-  PkgConfig::JSONCPP)
+  PUBLIC
+  PkgConfig::JSONCPP
+  OpenGL::OpenGL
+  GLEW::GLEW
+  PkgConfig::SDL2
+  PkgConfig::SDL2IMAGE)
 
-find_package(Boost 1.71 COMPONENTS system unit_test_framework)
-
-add_executable(
-  engine_test
-  tests/test_interpolator.cpp
-  tests/test_main.cpp)
-
-target_include_directories(
-  engine_test
-  PRIVATE
-  .)
-
-target_link_libraries(
-  engine_test
-  Boost::unit_test_framework
-  engine)
-
-add_test(
-  NAME Engine
-  COMMAND engine_test)
+add_subdirectory(app)
+add_subdirectory(tests)
