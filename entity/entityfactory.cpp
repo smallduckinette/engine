@@ -2,8 +2,8 @@
 
 #include <fstream>
 
-#include "core/json_utils.h"
-#include "entity/system.h"
+#include "engine/core/json_utils.h"
+#include "engine/entity/system.h"
 
 engine::EntityFactory::EntityFactory(const std::string & entityFile)
 {

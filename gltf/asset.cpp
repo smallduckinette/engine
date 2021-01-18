@@ -9,7 +9,7 @@
 #undef GLM_ENABLE_EXPERIMENTAL
 
 #include "base64.h"
-#include "core/json_utils.h"
+#include "engine/core/json_utils.h"
 
 namespace glm
 {

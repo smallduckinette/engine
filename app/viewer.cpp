@@ -7,13 +7,13 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
-#include "adh/primitive.h"
-#include "adh/camera.h"
-#include "adh/shader.h"
-#include "adh/transform.h"
-#include "adh/rtclock.h"
-#include "adh/animation.h"
-#include "gltf/builder.h"
+#include "engine/adh/primitive.h"
+#include "engine/adh/camera.h"
+#include "engine/adh/shader.h"
+#include "engine/adh/transform.h"
+#include "engine/adh/rtclock.h"
+#include "engine/adh/animation.h"
+#include "engine/gltf/builder.h"
 
 
 namespace po = boost::program_options;

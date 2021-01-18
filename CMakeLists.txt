@@ -10,6 +10,7 @@ add_library(
   adh/shader.cpp
   adh/texture.cpp
   adh/transform.cpp
+  core/logging.cpp
   core/json_utils.cpp
   entity/entityfactory.cpp
   gltf/asset.cpp
@@ -18,14 +19,15 @@ add_library(
 target_include_directories(
   engine
   PUBLIC
-  .)
+  ..)
 
 target_link_libraries(
   engine
   PUBLIC
-  PkgConfig::JSONCPP
-  OpenGL::OpenGL
+  Boost::log
   GLEW::GLEW
+  OpenGL::OpenGL
+  PkgConfig::JSONCPP
   PkgConfig::SDL2
   PkgConfig::SDL2IMAGE)
 

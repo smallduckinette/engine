@@ -1,7 +1,7 @@
 #ifndef __ENTITY_ENTITYID_H__
 #define __ENTITY_ENTITYID_H__
 
-#include "entity/strongid.h"
+#include "engine/entity/strongid.h"
 
 namespace engine
 {
