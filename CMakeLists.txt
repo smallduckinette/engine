@@ -10,6 +10,7 @@ add_library(
   adh/shader.cpp
   adh/texture.cpp
   adh/transform.cpp
+  controls/controls.cpp
   core/logging.cpp
   core/json_utils.cpp
   entity/entityfactory.cpp

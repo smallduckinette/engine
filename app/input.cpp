@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 
 #include "engine/core/logging.h"
+#include "engine/controls/controls.h"
 
 
 namespace po = boost::program_options;
@@ -32,6 +33,8 @@ int main(int argc, char ** argv)
       
       BOOST_LOG_TRIVIAL(info) << "Init SDL";
       
+      engine::Controls controls;
+      
       bool running = true;
       while(running)
       {
@@ -41,6 +44,10 @@ int main(int argc, char ** argv)
           if(event.type == SDL_QUIT)
           {
             running = false;
+          }
+          else
+          {
+            controls.process(event);
           }
         }
         
