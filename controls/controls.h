@@ -9,10 +9,13 @@ namespace engine
   {
   public:
     Controls();
-    
+
     void process(const SDL_Event & event);
-    
+
   private:
+    void onButton(const SDL_JoyButtonEvent & event);
+    void onAxis(const SDL_JoyAxisEvent & event);
+    void onHat(const SDL_JoyHatEvent & event);
   };
 }
 
