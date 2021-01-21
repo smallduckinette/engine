@@ -20,15 +20,15 @@ namespace engine::gltf
     Scene(const Json::Value & sceneDocument);
     Scene(const std::optional<std::string> & name,
           const std::vector<size_t> & nodes);
-    
+
     std::optional<std::string> _name;
     std::vector<size_t> _nodes;
-    
+
     bool operator==(const Scene & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Scene & scene);
-  
+
   class Node
   {
   public:
@@ -43,7 +43,7 @@ namespace engine::gltf
          const std::optional<glm::vec3> & translation,
          const std::vector<size_t> & weights,
          const std::optional<std::string> & name);
-    
+
     std::optional<size_t> _camera;
     std::vector<size_t> _children;
     std::optional<size_t> _skin;
@@ -69,18 +69,18 @@ namespace engine::gltf
               const std::optional<size_t> & material,
               GLenum mode,
               const std::vector<std::map<std::string, size_t> > & targets);
-    
+
     std::map<std::string, size_t> _attributes;
     std::optional<size_t> _indices;
     std::optional<size_t> _material;
     GLenum _mode;
     std::vector<std::map<std::string, size_t> > _targets;
-    
+
     bool operator==(const Primitive & other) const;
   };
 
   std::ostream & operator<<(std::ostream & str, const Primitive & primitive);
-  
+
   class Mesh
   {
   public:
@@ -88,23 +88,23 @@ namespace engine::gltf
     Mesh(const std::vector<Primitive> & primitives,
          const std::vector<size_t> & weights,
          const std::optional<std::string> & name);
-    
-    
+
+
     std::vector<Primitive> _primitives;
     std::vector<size_t> _weights;
     std::optional<std::string> _name;
 
     bool operator==(const Mesh & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Mesh & mesh);
-  
+
   class Buffer
   {
   public:
     Buffer(const Json::Value & sceneDocument,
            const std::filesystem::path & modelPath);
-    
+
     std::string _data;
     std::optional<std::string> _name;
   };
@@ -129,9 +129,9 @@ namespace engine::gltf
 
     bool operator==(const BufferView & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const BufferView & bufferView);
-  
+
   class Sparse
   {
   public:
@@ -139,16 +139,16 @@ namespace engine::gltf
     Sparse(size_t count,
            const std::map<std::string, size_t> & indices,
            const std::map<std::string, size_t> & values);
-           
+
     size_t _count;
     std::map<std::string, size_t> _indices;
     std::map<std::string, size_t> _values;
-    
+
     bool operator==(const Sparse & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Sparse & sparse);
-  
+
   class Accessor
   {
   public:
@@ -163,7 +163,7 @@ namespace engine::gltf
              const std::vector<float> & min,
              const std::optional<Sparse> & sparse,
              const std::optional<std::string> & name);
-    
+
     std::optional<size_t> _bufferView;
     size_t _byteOffset;
     GLenum _componentType;
@@ -174,29 +174,29 @@ namespace engine::gltf
     std::vector<float> _min;
     std::optional<Sparse> _sparse;
     std::optional<std::string> _name;
-    
+
     bool operator==(const Accessor & other) const;
-    
+
     GLint getComponentCount() const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Accessor & accessor);
-  
+
   class TextureInfo
   {
   public:
     TextureInfo(const Json::Value & materialDocument);
     TextureInfo(size_t index,
                 size_t texCoord);
-    
+
     size_t _index;
     size_t _texCoord;
 
     bool operator==(const TextureInfo & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const TextureInfo & textureInfo);
-  
+
   class NormalTextureInfo
   {
   public:
@@ -204,16 +204,16 @@ namespace engine::gltf
     NormalTextureInfo(size_t index,
                       size_t texCoord,
                       float scale);
-    
+
     size_t _index;
     size_t _texCoord;
     float _scale;
-    
+
     bool operator==(const NormalTextureInfo & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const NormalTextureInfo & textureInfo);
-  
+
   class OcclusionTextureInfo
   {
   public:
@@ -221,16 +221,16 @@ namespace engine::gltf
     OcclusionTextureInfo(size_t index,
                       size_t texCoord,
                       float scale);
-    
+
     size_t _index;
     size_t _texCoord;
     float _strength;
-    
+
     bool operator==(const OcclusionTextureInfo & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const OcclusionTextureInfo & textureInfo);
-  
+
   class PbrMetallicRoughness
   {
   public:
@@ -241,7 +241,7 @@ namespace engine::gltf
                          float roughnessFactory,
                          const std::optional<TextureInfo> & metallicRoughnessTexture);
 
-    
+
     glm::vec4 _baseColorFactor;
     std::optional<TextureInfo> _baseColorTexture;
     float _metallicFactor;
@@ -250,9 +250,9 @@ namespace engine::gltf
 
     bool operator==(const PbrMetallicRoughness & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const PbrMetallicRoughness & pbr);
-  
+
   class Material
   {
   public:
@@ -266,7 +266,7 @@ namespace engine::gltf
              const std::string & alphaMode,
              float alphaCutoff,
              bool doubleSided);
-    
+
     std::optional<std::string> _name;
     std::optional<PbrMetallicRoughness> _pbrMetallicRoughness;
     std::optional<NormalTextureInfo> _normalTexture;
@@ -289,14 +289,14 @@ namespace engine::gltf
     Texture(const std::optional<size_t> & sampler,
             const std::optional<size_t> & source,
             const std::optional<std::string> & name);
-    
+
     std::optional<size_t> _sampler;
     std::optional<size_t> _source;
     std::optional<std::string> _name;
 
     bool operator==(const Texture & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Texture & texture);
 
   class Sampler
@@ -308,7 +308,7 @@ namespace engine::gltf
             GLenum wrapS,
             GLenum wrapT,
             const std::optional<std::string> & name);
-    
+
     std::optional<GLenum> _magFilter;
     std::optional<GLenum> _minFilter;
     GLenum _wrapS;
@@ -317,7 +317,7 @@ namespace engine::gltf
 
     bool operator==(const Sampler & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Sampler & sampler);
 
   class Image
@@ -328,7 +328,7 @@ namespace engine::gltf
           const std::optional<std::string> & mimeType,
           const std::optional<size_t> & bufferView,
           const std::optional<std::string> & name);
-    
+
     std::optional<std::string> _uri;
     std::optional<std::string> _mimeType;
     std::optional<size_t> _bufferView;
@@ -345,28 +345,28 @@ namespace engine::gltf
     Target(const Json::Value & targetDocument);
     Target(const std::optional<size_t> & node,
            const std::string & path);
-    
+
     std::optional<size_t> _node;
     std::string _path;
 
     bool operator==(const Target & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Target & target);
-  
+
   class Channel
   {
   public:
     Channel(const Json::Value & channelDocument);
     Channel(size_t sampler,
             const Target & target);
-    
+
     size_t _sampler;
     Target _target;
 
     bool operator==(const Channel & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const Channel & channel);
 
   class AnimationSampler
@@ -376,16 +376,16 @@ namespace engine::gltf
     AnimationSampler(size_t input,
                      const std::string & interpolation,
                      size_t output);
-    
+
     size_t _input;
     std::string _interpolation;
     size_t _output;
 
     bool operator==(const AnimationSampler & other) const;
   };
-  
+
   std::ostream & operator<<(std::ostream & str, const AnimationSampler & sampler);
-  
+
   class Animation
   {
   public:
@@ -393,7 +393,7 @@ namespace engine::gltf
     Animation(const std::vector<Channel> & channels,
               const std::vector<AnimationSampler> & samplers,
               const std::optional<std::string> & name);
-    
+
     std::vector<Channel> _channels;
     std::vector<AnimationSampler> _samplers;
     std::optional<std::string> _name;
@@ -402,12 +402,12 @@ namespace engine::gltf
   };
 
   std::ostream & operator<<(std::ostream & str, const Animation & animation);
-  
+
   class Asset
   {
   public:
     Asset(const std::filesystem::path & gltfFile);
-    
+
     size_t _scene;
     std::vector<Scene> _scenes;
     std::vector<Node> _nodes;
