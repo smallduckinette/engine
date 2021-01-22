@@ -18,15 +18,18 @@ void makeUserBindings(const Json::Value & config,
                       std::map<std::string, engine::Controls::BindingID> & nameToId,
                       std::map<engine::Controls::BindingID, std::string> & idToName)
 {
-  for(auto && device : engine::getNodeOrThrow(config, "devices"))
+  if(config != Json::Value())
   {
-    for(auto && binding : engine::getNodeOrThrow(device, "bindings"))
+    for(auto && device : engine::getNodeOrThrow(config, "devices"))
     {
-      std::string name;
-      engine::get(binding, "name", name);
-      engine::Controls::BindingID bindingID(nameToId.size() + 1);
-      nameToId.emplace(name, bindingID);
-      idToName.emplace(bindingID, name);
+      for(auto && binding : engine::getNodeOrThrow(device, "bindings"))
+      {
+        std::string name;
+        engine::get(binding, "name", name);
+        engine::Controls::BindingID bindingID(nameToId.size() + 1);
+        nameToId.emplace(name, bindingID);
+        idToName.emplace(bindingID, name);
+      }
     }
   }
 }
@@ -85,7 +88,7 @@ int main(int argc, char ** argv)
            auto it = idToName.find(bindingID);
            if(it != idToName.end())
            {
-             BOOST_LOG_TRIVIAL(info) << "onButton[" << it->second << "] " << value;
+             BOOST_LOG_TRIVIAL(info) << "onAxis[" << it->second << "] " << value;
            }
          });
 

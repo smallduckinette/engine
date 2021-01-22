@@ -73,42 +73,45 @@ void engine::Controls::initConfig(const Json::Value & config,
 {
   BOOST_LOG_TRIVIAL(debug) << "Reading configuration";
 
-  for(auto && device : getNodeOrThrow(config, "devices"))
+  if(config != Json::Value())
   {
-    std::string guid;
-    get(device, "guid", guid);
-    auto it = _guidToIndex.find(guid);
-    if(it == _guidToIndex.end())
+    for(auto && device : getNodeOrThrow(config, "devices"))
     {
-      BOOST_LOG_TRIVIAL(error) << "No device found with GUID " << guid;
-    }
-    else
-    {
-      DeviceBindings & bindings = _deviceBindings.emplace(it->second, DeviceBindings()).first->second;
-
-      for(auto && binding : getNodeOrThrow(device, "bindings"))
+      std::string guid;
+      get(device, "guid", guid);
+      auto it = _guidToIndex.find(guid);
+      if(it == _guidToIndex.end())
       {
-        std::string type;
-        get(binding, "type", type);
-        std::string name;
-        get(binding, "name", name);
-        unsigned int id;
-        get(binding, "id", id);
+        BOOST_LOG_TRIVIAL(error) << "No device found with GUID " << guid;
+      }
+      else
+      {
+        DeviceBindings & bindings = _deviceBindings.emplace(it->second, DeviceBindings()).first->second;
 
-        auto itb = userBindings.find(name);
-        if(itb == userBindings.end())
+        for(auto && binding : getNodeOrThrow(device, "bindings"))
         {
-          BOOST_LOG_TRIVIAL(error) << "Configuration references unknown binding " << name;
-        }
-        else if(type == "button")
-        {
-          bindings._buttons.insert_or_assign(id, itb->second);
-          BOOST_LOG_TRIVIAL(info) << "Device " << guid << "[" << it->second << "] button " << id << " assigned to event " << name << "[" << itb->second << "]";
-        }
-        else if(type == "axis")
-        {
-          bindings._axis.insert_or_assign(id, itb->second);
-          BOOST_LOG_TRIVIAL(info) << "Device " << guid << "[" << it->second << "] axis " << id << " assigned to event " << name << "[" << itb->second << "]";
+          std::string type;
+          get(binding, "type", type);
+          std::string name;
+          get(binding, "name", name);
+          unsigned int id;
+          get(binding, "id", id);
+
+          auto itb = userBindings.find(name);
+          if(itb == userBindings.end())
+          {
+            BOOST_LOG_TRIVIAL(error) << "Configuration references unknown binding " << name;
+          }
+          else if(type == "button")
+          {
+            bindings._buttons.insert_or_assign(id, itb->second);
+            BOOST_LOG_TRIVIAL(info) << "Device " << guid << "[" << it->second << "] button " << id << " assigned to event " << name << "[" << itb->second << "]";
+          }
+          else if(type == "axis")
+          {
+            bindings._axis.insert_or_assign(id, itb->second);
+            BOOST_LOG_TRIVIAL(info) << "Device " << guid << "[" << it->second << "] axis " << id << " assigned to event " << name << "[" << itb->second << "]";
+          }
         }
       }
     }
