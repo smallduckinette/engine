@@ -5,9 +5,7 @@ add_executable(
 target_link_libraries(
   viewer
   PRIVATE
-  engine
-  Boost::program_options
-  Boost::log)
+  engine)
 
 add_executable(
   input

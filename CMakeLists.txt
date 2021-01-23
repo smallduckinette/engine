@@ -11,6 +11,7 @@ add_library(
   adh/texture.cpp
   adh/transform.cpp
   controls/controls.cpp
+  core/app.cpp
   core/logging.cpp
   core/json_utils.cpp
   entity/entityfactory.cpp
@@ -26,6 +27,7 @@ target_link_libraries(
   engine
   PUBLIC
   Boost::log
+  Boost::program_options
   GLEW::GLEW
   OpenGL::OpenGL
   PkgConfig::JSONCPP

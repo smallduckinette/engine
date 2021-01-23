@@ -6,7 +6,7 @@
 #include <boost/program_options.hpp>
 #include <SDL2/SDL.h>
 
-#include "engine/core/logging.h"
+#include "engine/core/app.h"
 #include "engine/core/json_utils.h"
 #include "engine/controls/controls.h"
 
@@ -40,24 +40,12 @@ int main(int argc, char ** argv)
   {
     std::filesystem::path config;
 
-    po::options_description desc("Options");
-    desc.add_options()
-      ("help", "Displays help")
-      ("verbose,v", "Verbose logging")
+    engine::App app;
+    app.add_options()
       ("config,c", po::value<std::filesystem::path>(&config), "Control configuration file");
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-
-    if (vm.count("help"))
+    if(app.run(argc, argv))
     {
-      std::cout << desc << std::endl;
-    }
-    else
-    {
-      po::notify(vm);
-      engine::setLogLevel(vm.count("verbose"));
-
       BOOST_LOG_TRIVIAL(info) << "Init SDL";
 
       Json::Value jsonConfig;
