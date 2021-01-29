@@ -29,7 +29,7 @@ void engine::adh::Primitive::bind()
 
 void engine::adh::Primitive::unbind()
 {
-  glBindVertexArray(0);  
+  glBindVertexArray(0);
 }
 
 void engine::adh::Primitive::setVertexData(const char * data, size_t size)
@@ -38,10 +38,10 @@ void engine::adh::Primitive::setVertexData(const char * data, size_t size)
 }
 
 void engine::adh::Primitive::describeVertexData(size_t index,
-                                        size_t typeSize,
-                                        GLenum componentType,
-                                        size_t stride,
-                                        size_t offset)
+                                                size_t typeSize,
+                                                GLenum componentType,
+                                                size_t stride,
+                                                size_t offset)
 {
   glVertexAttribPointer(index,
                         typeSize,
@@ -49,22 +49,22 @@ void engine::adh::Primitive::describeVertexData(size_t index,
                         GL_FALSE,
                         stride,
                         reinterpret_cast<void *>(offset));
-  glEnableVertexAttribArray(index);  
+  glEnableVertexAttribArray(index);
 }
 
 size_t engine::adh::Primitive::setDataBuffer(const char * data,
-                                     size_t size,
-                                     GLint componentCount,
-                                     GLenum componentType,
-                                     bool normalize,
-                                     size_t stride,
-                                     size_t offset)
+                                             size_t size,
+                                             GLint componentCount,
+                                             GLenum componentType,
+                                             bool normalize,
+                                             size_t stride,
+                                             size_t offset)
 {
   GLuint buffer;
   glGenBuffers(1, &buffer);
   _buffers.push_back(buffer);
   size_t index = _buffers.size() - 1;
-  
+
   glBindBuffer(GL_ARRAY_BUFFER, buffer);
   glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
   glVertexAttribPointer(index,
@@ -73,26 +73,26 @@ size_t engine::adh::Primitive::setDataBuffer(const char * data,
                         normalize,
                         stride,
                         reinterpret_cast<void *>(offset));
-  glEnableVertexAttribArray(index);  
-  
+  glEnableVertexAttribArray(index);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   return index;
 }
 
 void engine::adh::Primitive::setIndicesBuffer(const char * data,
-                                      size_t size,
-                                      size_t count,
-                                      GLenum type)
+                                              size_t size,
+                                              size_t count,
+                                              GLenum type)
 {
   GLuint elements;
   glGenBuffers(1, &elements);
   _elements = elements;
-  
+
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  
+
   _count = count;
   _type = type;
 }
@@ -127,7 +127,7 @@ void engine::adh::Primitive::draw(Context & context) const
     texture.second->bind(texture.first);
     _shader->setInteger(texture.second->getName(), texture.first - GL_TEXTURE0);
   }
-  
+
   // Setup shader
   _shader->use();
   _shader->setMatrix("modelMatrix", context._model);
@@ -142,8 +142,8 @@ void engine::adh::Primitive::draw(Context & context) const
   {
     _shader->setVector(color.first, color.second);
   }
-  
+
   glDrawElements(_mode, _count, _type, 0);
-  
+
   Node::draw(context);
 }

@@ -4,6 +4,7 @@ add_library(
   adh/animation.cpp
   adh/camera.cpp
   adh/context.cpp
+  adh/envmap.cpp
   adh/node.cpp
   adh/primitive.cpp
   adh/rtclock.cpp

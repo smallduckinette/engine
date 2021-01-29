@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
@@ -12,6 +13,8 @@
 #include "engine/adh/transform.h"
 #include "engine/adh/rtclock.h"
 #include "engine/adh/animation.h"
+#include "engine/adh/texture.h"
+#include "engine/adh/envmap.h"
 #include "engine/gltf/builder.h"
 
 
@@ -25,6 +28,7 @@ int main(int argc, char ** argv)
     int resY = 1024;
     std::string model;
     std::filesystem::path dataDir;
+    std::filesystem::path envMap;
 
     engine::App app;
 
@@ -33,6 +37,7 @@ int main(int argc, char ** argv)
       ("y", po::value<int>(&resY)->default_value(resY), "Y resolution")
       ("model,m", po::value<std::string>(&model)->required(), "model to display")
       ("data,d", po::value<std::filesystem::path>(&dataDir)->default_value("data"), "data directory")
+      ("envmap", po::value<std::filesystem::path>(&envMap), "Environment map")
       ("full-screen", "Full screen")
       ("vsync", "Enable vertical synchronization");
 
@@ -99,6 +104,15 @@ int main(int argc, char ** argv)
       std::vector<std::unique_ptr<engine::adh::Animation> > animations;
       transform->addChild(builder.build(animations));
       camera->addChild(transform);
+
+      if(!envMap.empty())
+      {
+        std::ifstream vertex = dataDir / "shaders" / "envmap.vert";
+        std::ifstream fragment = dataDir / "shaders" / "envmap.frag";
+        camera->addChild(std::make_shared<engine::adh::EnvMap>
+                         (std::make_shared<engine::adh::Texture>("texture", envMap),
+                          std::make_shared<engine::adh::Shader>(vertex, fragment)));
+      }
 
       camera->setViewMatrix(glm::lookAt(glm::vec3(-5.0f, 0.0f, 0.0f),
                                         glm::vec3(0.0f, 0.0f, 0.0f),
