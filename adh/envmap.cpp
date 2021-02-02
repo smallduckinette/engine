@@ -22,7 +22,9 @@ void engine::adh::EnvMap::draw(Context & context) const
   _shader->setMatrix("viewMatrix", context._view);
   _shader->setMatrix("projectionMatrix", context._projection);
 
+  glDepthFunc(GL_LEQUAL);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glDepthFunc(GL_LESS);
 
   Node::draw(context);
 }

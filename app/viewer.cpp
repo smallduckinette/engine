@@ -102,7 +102,7 @@ int main(int argc, char ** argv)
       auto camera = std::make_shared<engine::adh::Camera>(glm::radians(45.0f),
                                                           (float)resX / (float)resY,
                                                           0.1f,
-                                                          100.0f);
+                                                          10000.0f);
       std::vector<std::unique_ptr<engine::adh::Animation> > animations;
       transform->addChild(builder.build(animations));
       camera->addChild(transform);
@@ -116,10 +116,11 @@ int main(int argc, char ** argv)
                           std::make_shared<engine::adh::Shader>(vertex, fragment)));
       }
 
-      glm::vec3 position(0.0f, 0.0f, -5.0f);
+      glm::vec3 front(0.0f, 0.0f, -1.0f);
       glm::vec3 centre(glm::vec3(0.0f, 0.0f, 0.0f));
       glm::vec3 side(glm::vec3(1.0f, 0.0f, 0.0f));
       glm::vec3 up(glm::vec3(0.0f, 1.0f, 0.0f));
+      float distance = 5;
       float yawAngle = 0;
       float pitchAngle = 0;
 
@@ -137,7 +138,11 @@ int main(int argc, char ** argv)
           else if(event.type == SDL_MOUSEMOTION)
           {
             yawAngle += event.motion.xrel;
-            pitchAngle += event.motion.yrel;
+            pitchAngle = std::clamp(pitchAngle + event.motion.yrel, -85.0f, 85.0f);
+          }
+          else if(event.type == SDL_MOUSEWHEEL)
+          {
+            distance = std::clamp(distance + event.wheel.y, 0.5f, 1000.0f);
           }
         }
 
@@ -146,7 +151,7 @@ int main(int argc, char ** argv)
         BOOST_LOG_TRIVIAL(debug) << 1 / d.count();
         t1 = t2;
 
-        glm::vec3 pos = position;
+        glm::vec3 pos = front * distance;
         pos = glm::rotate(pos,
                           glm::radians(pitchAngle),
                           side);
