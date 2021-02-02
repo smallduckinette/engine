@@ -5,6 +5,7 @@
 #include <boost/program_options.hpp>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "engine/core/app.h"
 #include "engine/adh/primitive.h"
@@ -13,7 +14,7 @@
 #include "engine/adh/transform.h"
 #include "engine/adh/rtclock.h"
 #include "engine/adh/animation.h"
-#include "engine/adh/texture.h"
+#include "engine/adh/texturecubemap.h"
 #include "engine/adh/envmap.h"
 #include "engine/gltf/builder.h"
 
@@ -85,6 +86,7 @@ int main(int argc, char ** argv)
 
       glEnable(GL_MULTISAMPLE);
       glEnable(GL_DEPTH_TEST);
+      glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
       const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
       const GLubyte* version = glGetString(GL_VERSION); // version as a string
@@ -110,13 +112,16 @@ int main(int argc, char ** argv)
         std::ifstream vertex = dataDir / "shaders" / "envmap.vert";
         std::ifstream fragment = dataDir / "shaders" / "envmap.frag";
         camera->addChild(std::make_shared<engine::adh::EnvMap>
-                         (std::make_shared<engine::adh::Texture>("texture", envMap),
+                         (std::make_shared<engine::adh::TextureCubeMap>("texture", envMap),
                           std::make_shared<engine::adh::Shader>(vertex, fragment)));
       }
 
-      camera->setViewMatrix(glm::lookAt(glm::vec3(-5.0f, 0.0f, 0.0f),
-                                        glm::vec3(0.0f, 0.0f, 0.0f),
-                                        glm::vec3(0.0f, 0.0f, 1.0f)));
+      glm::vec3 position(0.0f, 0.0f, -5.0f);
+      glm::vec3 centre(glm::vec3(0.0f, 0.0f, 0.0f));
+      glm::vec3 side(glm::vec3(1.0f, 0.0f, 0.0f));
+      glm::vec3 up(glm::vec3(0.0f, 1.0f, 0.0f));
+      float yawAngle = 0;
+      float pitchAngle = 0;
 
       bool running = true;
       auto t1 = std::chrono::steady_clock::now();
@@ -129,6 +134,11 @@ int main(int argc, char ** argv)
           {
             running = false;
           }
+          else if(event.type == SDL_MOUSEMOTION)
+          {
+            yawAngle += event.motion.xrel;
+            pitchAngle += event.motion.yrel;
+          }
         }
 
         auto t2 = std::chrono::steady_clock::now();
@@ -136,10 +146,22 @@ int main(int argc, char ** argv)
         BOOST_LOG_TRIVIAL(debug) << 1 / d.count();
         t1 = t2;
 
-        glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+        glm::vec3 pos = position;
+        pos = glm::rotate(pos,
+                          glm::radians(pitchAngle),
+                          side);
+        pos = glm::rotate(pos,
+                          glm::radians(yawAngle),
+                          up);
+
+        camera->setViewMatrix(glm::lookAt(pos,
+                                          centre,
+                                          up));
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         engine::adh::Context context;
-        context._lightPosition = glm::vec3(0.0f, -5.0f, 0.0f);
+        context._lightPosition = glm::vec3(-5.0f, 0.0f, 0.0f);
         camera->draw(context);
 
         SDL_GL_SwapWindow(window.get());

@@ -8,19 +8,19 @@
 namespace engine::adh
 {
   class Shader;
-  class Texture;
+  class TextureCubeMap;
 
   class EnvMap : public Node
   {
   public:
-    EnvMap(const std::shared_ptr<Texture> & texture,
+    EnvMap(const std::shared_ptr<TextureCubeMap> & texture,
            const std::shared_ptr<Shader> & shader);
     ~EnvMap();
 
     void draw(Context & context) const override;
 
   private:
-    const std::shared_ptr<Texture> _texture;
+    const std::shared_ptr<TextureCubeMap> _texture;
     const std::shared_ptr<Shader> _shader;
   };
 }

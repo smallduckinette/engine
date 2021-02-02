@@ -10,6 +10,7 @@ add_library(
   adh/rtclock.cpp
   adh/shader.cpp
   adh/texture.cpp
+  adh/texturecubemap.cpp
   adh/transform.cpp
   controls/controls.cpp
   core/app.cpp
