@@ -14,11 +14,11 @@ namespace engine
     void parse(const std::string & label,
                const Json::Value * node,
                size_t & value);
-    
+
     void parse(const std::string & label,
                const Json::Value * node,
                unsigned int & value);
-    
+
     void parse(const std::string & label,
                const Json::Value * node,
                std::string & value);
@@ -31,17 +31,17 @@ namespace engine
                const Json::Value * node,
                bool & value);
   }
-  
+
   const Json::Value * getNode(const Json::Value & document,
                               const std::string & name);
-  
+
   const Json::Value & getNodeOrThrow(const Json::Value & document,
                                      const std::string & name);
-  
+
   void get(const Json::Value & document,
            const std::string & name,
            glm::mat4 & value);
-  
+
   void get(const Json::Value & document,
            const std::string & name,
            glm::quat & value);
@@ -53,7 +53,7 @@ namespace engine
   void get(const Json::Value & document,
            const std::string & name,
            glm::vec4 & value);
-  
+
   template<typename T>
   void get(const Json::Value & document,
            const std::string & name,
@@ -69,7 +69,7 @@ namespace engine
       throw std::runtime_error("Could not find node " + name + " in document");
     }
   }
-  
+
   template<typename T>
   void get(const Json::Value & document,
            const std::string & name,
@@ -103,7 +103,7 @@ namespace engine
       }
     }
   }
-  
+
   template<typename T>
   void get(const Json::Value & document,
            const std::string & name,
@@ -156,7 +156,7 @@ namespace engine
       }
     }
   }
-  
+
   template<typename T>
   void get(const Json::Value & document,
            const std::string & name,

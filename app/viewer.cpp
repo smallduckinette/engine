@@ -34,7 +34,8 @@ int main(int argc, char ** argv)
     {
       engine::Graphics graphics(app.clock(), app.resX(), app.resY(), dataDir);
 
-      graphics.addModel(model);
+      graphics.registerArchetype("model", engine::GraphicsArchetype{model});
+      graphics.createEntity(engine::EntityId(1), "model");
 
       if(!envMap.empty())
       {

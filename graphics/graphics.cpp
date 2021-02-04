@@ -5,6 +5,7 @@
 #include <boost/log/trivial.hpp>
 #include <GL/glew.h>
 
+#include "engine/core/serializejson.h"
 #include "engine/adh/transform.h"
 #include "engine/adh/camera.h"
 #include "engine/adh/envmap.h"
@@ -13,6 +14,11 @@
 #include "engine/adh/animation.h"
 #include "engine/gltf/builder.h"
 
+
+void engine::GraphicsArchetype::deserialize(const Json::Value & doc)
+{
+  deserializeJson(_model, doc, "model");
+}
 
 engine::Graphics::Graphics(Clock * clock,
                            int resX,
@@ -49,6 +55,37 @@ engine::Graphics::Graphics(Clock * clock,
   _camera->addChild(_root);
 }
 
+void engine::Graphics::registerArchetype(const std::string & name,
+                                         const Json::Value & doc)
+{
+  GraphicsArchetype archetype;
+  archetype.deserialize(doc);
+  registerArchetype(name, archetype);
+}
+
+void engine::Graphics::registerArchetype(const std::string & name,
+                                         const GraphicsArchetype & archetype)
+{
+  _archetypes.emplace(name, archetype);
+}
+
+void engine::Graphics::createEntity(EntityId entityId, const std::string & archetype)
+{
+  auto it = _archetypes.find(archetype);
+  if(it != _archetypes.end())
+  {
+    gltf::Builder builder(_clock,
+                          _shaderDir,
+                          it->second._model);
+
+    std::vector<std::unique_ptr<adh::Animation> > animations;
+    auto transform = std::make_shared<adh::Transform>();
+    transform->addChild(builder.build(animations));
+    _root->addChild(transform);
+    _entities.emplace(entityId, transform);
+  }
+}
+
 void engine::Graphics::addEnvmap(const std::filesystem::path & envMap)
 {
   std::ifstream vertex(_shaderDir / "envmap.vert");
@@ -63,16 +100,6 @@ void engine::Graphics::setView(const glm::mat4 & view)
   _camera->setViewMatrix(view);
 }
 
-void engine::Graphics::addModel(const std::filesystem::path & file)
-{
-  gltf::Builder builder(_clock,
-                        _shaderDir,
-                        file);
-
-  std::vector<std::unique_ptr<engine::adh::Animation> > animations;
-  _root->addChild(builder.build(animations));
-}
-
 void engine::Graphics::display()
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -80,13 +107,4 @@ void engine::Graphics::display()
   engine::adh::Context context;
   context._lightPosition = glm::vec3(-5.0f, 0.0f, 0.0f);
   _camera->draw(context);
-}
-
-void engine::Graphics::init(const std::filesystem::path & )
-{
-}
-
-void engine::Graphics::add(EntityId ,
-                           const Json::Value & )
-{
 }

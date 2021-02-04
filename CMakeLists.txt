@@ -16,7 +16,7 @@ add_library(
   core/logging.cpp
   core/json_utils.cpp
   core/rtclock.cpp
-  entity/entityfactory.cpp
+  core/serializejson.cpp
   gltf/asset.cpp
   gltf/builder.cpp
   graphics/graphics.cpp)

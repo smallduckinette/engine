@@ -13,10 +13,11 @@ namespace engine
   public:
     virtual ~System() = default;
 
-    virtual void init(const std::filesystem::path & rootDirectory) = 0;
+    /// Register an archetype from its Json definition
+    virtual void registerArchetype(const std::string & archetype, const Json::Value & doc) = 0;
 
-    virtual void add(EntityId entityId,
-                     const Json::Value & doc) = 0;
+    /// Create an entity from an archetype
+    virtual void createEntity(EntityId entityId, const std::string & archetype) = 0;
   };
 }
 
