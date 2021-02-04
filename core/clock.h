@@ -1,7 +1,7 @@
 #ifndef __ADH_CLOCK_H__
 #define __ADH_CLOCK_H__
 
-namespace engine::adh
+namespace engine
 {
   class Clock
   {

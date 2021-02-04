@@ -7,7 +7,6 @@ add_library(
   adh/envmap.cpp
   adh/node.cpp
   adh/primitive.cpp
-  adh/rtclock.cpp
   adh/shader.cpp
   adh/texture.cpp
   adh/texturecubemap.cpp
@@ -16,9 +15,11 @@ add_library(
   core/app.cpp
   core/logging.cpp
   core/json_utils.cpp
+  core/rtclock.cpp
   entity/entityfactory.cpp
   gltf/asset.cpp
-  gltf/builder.cpp)
+  gltf/builder.cpp
+  graphics/graphics.cpp)
 
 target_include_directories(
   engine

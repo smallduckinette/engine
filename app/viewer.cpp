@@ -4,19 +4,11 @@
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
 #include <SDL2/SDL.h>
-#include <GL/glew.h>
 #include <glm/gtx/rotate_vector.hpp>
 
 #include "engine/core/app.h"
-#include "engine/adh/primitive.h"
-#include "engine/adh/camera.h"
-#include "engine/adh/shader.h"
-#include "engine/adh/transform.h"
-#include "engine/adh/rtclock.h"
-#include "engine/adh/animation.h"
-#include "engine/adh/texturecubemap.h"
-#include "engine/adh/envmap.h"
-#include "engine/gltf/builder.h"
+#include "engine/core/clock.h"
+#include "engine/graphics/graphics.h"
 
 
 namespace po = boost::program_options;
@@ -25,95 +17,28 @@ int main(int argc, char ** argv)
 {
   try
   {
-    int resX = 1280;
-    int resY = 1024;
     std::string model;
     std::filesystem::path dataDir;
     std::filesystem::path envMap;
 
     engine::App app;
 
+    app.enableGraphics();
+
     app.add_options()
-      ("x", po::value<int>(&resX)->default_value(resX), "X resolution")
-      ("y", po::value<int>(&resY)->default_value(resY), "Y resolution")
       ("model,m", po::value<std::string>(&model)->required(), "model to display")
       ("data,d", po::value<std::filesystem::path>(&dataDir)->default_value("data"), "data directory")
-      ("envmap", po::value<std::filesystem::path>(&envMap), "Environment map")
-      ("full-screen", "Full screen")
-      ("vsync", "Enable vertical synchronization");
+      ("envmap", po::value<std::filesystem::path>(&envMap), "Environment map");
 
     if(app.run(argc, argv))
     {
-      BOOST_LOG_TRIVIAL(info) << "Init SDL";
-      if(SDL_Init(SDL_INIT_VIDEO) < 0)
-        throw std::runtime_error(std::string("Failed to init SDL : ") + SDL_GetError());
+      engine::Graphics graphics(app.clock(), app.resX(), app.resY(), dataDir);
 
-      unsigned int videoFlags = SDL_WINDOW_OPENGL;
-      if(app.has("full-screen"))
-      {
-        SDL_DisplayMode displayMode;
-        if(SDL_GetDesktopDisplayMode(0, &displayMode) < 0)
-          throw std::runtime_error(std::string("Failed to get display mode : ") + SDL_GetError());
-        resX = displayMode.w;
-        resY = displayMode.h;
-        videoFlags |= SDL_WINDOW_FULLSCREEN;
-      }
-
-      BOOST_LOG_TRIVIAL(info) << "Setting up video mode to " << resX << "x" << resY;
-
-      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-      std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>
-        window(SDL_CreateWindow("Viewer",
-                                SDL_WINDOWPOS_UNDEFINED,
-                                SDL_WINDOWPOS_UNDEFINED,
-                                resX,
-                                resY,
-                                videoFlags),
-               SDL_DestroyWindow);
-
-      std::unique_ptr<void, decltype(&SDL_GL_DeleteContext)>
-        glContext(SDL_GL_CreateContext(window.get()),
-                  SDL_GL_DeleteContext);
-
-      if(app.has("vsync"))
-        SDL_GL_SetSwapInterval(1);
-
-      glewExperimental = GL_TRUE;
-      glewInit();
-
-      glViewport(0, 0, resX, resY);
-
-      glEnable(GL_MULTISAMPLE);
-      glEnable(GL_DEPTH_TEST);
-      glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-      const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-      const GLubyte* version = glGetString(GL_VERSION); // version as a string
-
-      BOOST_LOG_TRIVIAL(info) << "Renderer: " << renderer;
-      BOOST_LOG_TRIVIAL(info) << "Version: " << version;
-
-      auto clock = std::make_shared<engine::adh::RtClock>();
-
-      auto shaderDir = dataDir / "shaders";
-      engine::gltf::Builder builder(clock, shaderDir, model);
-      auto transform = std::make_shared<engine::adh::Transform>();
-      auto camera = std::make_shared<engine::adh::Camera>(glm::radians(45.0f),
-                                                          (float)resX / (float)resY,
-                                                          0.1f,
-                                                          10000.0f);
-      std::vector<std::unique_ptr<engine::adh::Animation> > animations;
-      transform->addChild(builder.build(animations));
-      camera->addChild(transform);
+      graphics.addModel(model);
 
       if(!envMap.empty())
       {
-        std::ifstream vertex = dataDir / "shaders" / "envmap.vert";
-        std::ifstream fragment = dataDir / "shaders" / "envmap.frag";
-        camera->addChild(std::make_shared<engine::adh::EnvMap>
-                         (std::make_shared<engine::adh::TextureCubeMap>("texture", envMap),
-                          std::make_shared<engine::adh::Shader>(vertex, fragment)));
+        graphics.addEnvmap(envMap);
       }
 
       glm::vec3 front(0.0f, 0.0f, -1.0f);
@@ -125,7 +50,7 @@ int main(int argc, char ** argv)
       float pitchAngle = 0;
 
       bool running = true;
-      auto t1 = std::chrono::steady_clock::now();
+      float t1 = app.clock()->getTimestamp();
       while(running)
       {
         SDL_Event event;
@@ -146,9 +71,9 @@ int main(int argc, char ** argv)
           }
         }
 
-        auto t2 = std::chrono::steady_clock::now();
-        std::chrono::duration<float> d = (t2 - t1);
-        BOOST_LOG_TRIVIAL(debug) << 1 / d.count();
+        float t2 = app.clock()->getTimestamp();
+        float d = t2 - t1;
+        BOOST_LOG_TRIVIAL(debug) << 1 / d;
         t1 = t2;
 
         glm::vec3 pos = front * distance;
@@ -159,17 +84,11 @@ int main(int argc, char ** argv)
                           glm::radians(yawAngle),
                           up);
 
-        camera->setViewMatrix(glm::lookAt(pos,
-                                          centre,
-                                          up));
-
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        engine::adh::Context context;
-        context._lightPosition = glm::vec3(-5.0f, 0.0f, 0.0f);
-        camera->draw(context);
-
-        SDL_GL_SwapWindow(window.get());
+        graphics.setView(glm::lookAt(pos,
+                                     centre,
+                                     up));
+        graphics.display();
+        SDL_GL_SwapWindow(app.window());
       }
     }
 

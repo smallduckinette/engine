@@ -3,17 +3,17 @@
 
 #include <chrono>
 
-#include "clock.h"
+#include "engine/core/clock.h"
 
-namespace engine::adh
+namespace engine
 {
   class RtClock : public Clock
   {
   public:
     RtClock();
-    
+
     float getTimestamp() const override;
-    
+
   private:
     std::chrono::time_point<std::chrono::steady_clock> _dawnOfTimes;
   };

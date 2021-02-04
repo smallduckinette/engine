@@ -17,7 +17,7 @@
 #undef GLM_ENABLE_EXPERIMENTAL
 
 
-engine::gltf::Builder::Builder(const std::shared_ptr<adh::Clock> & clock,
+engine::gltf::Builder::Builder(Clock * clock,
                                const std::filesystem::path & shaderPath,
                                const std::filesystem::path & gltfFile):
   _clock(clock),
@@ -30,9 +30,9 @@ engine::gltf::Builder::Builder(const std::shared_ptr<adh::Clock> & clock,
 std::unique_ptr<engine::adh::Node> engine::gltf::Builder::build(std::vector<std::unique_ptr<adh::Animation> > & animations) const
 {
   auto && scene = _asset->_scenes.at(_asset->_scene);
-  
+
   auto sceneNode = std::make_unique<adh::Node>(scene._name.value_or(std::string()));
-  
+
   std::map<size_t, std::shared_ptr<adh::Transform> > animationNodes;
 
   // Build all the nodes for the scene
@@ -40,7 +40,7 @@ std::unique_ptr<engine::adh::Node> engine::gltf::Builder::build(std::vector<std:
   {
     sceneNode->addChild(buildNode(nodeIndex, animationNodes));
   }
-  
+
   // Build all the animations for the scene
   for(auto && animation : _asset->_animations)
   {
@@ -55,7 +55,7 @@ std::unique_ptr<engine::adh::Node> engine::gltf::Builder::build(std::vector<std:
       auto targetNodeIt = animationNodes.find(*channel._target._node);
       if(targetNodeIt == animationNodes.end())
         throw std::runtime_error("Animation targets unknown node");
-      
+
       if(channel._target._path == "translation")
       {
         animationControl->addChannel
@@ -87,13 +87,13 @@ std::unique_ptr<engine::adh::Node> engine::gltf::Builder::build(std::vector<std:
             [](adh::Transform * transform, const glm::vec3 & t)
             {
               transform->setScale(t);
-            }));        
+            }));
       }
     }
-    
+
     animations.push_back(std::move(animationControl));
   }
-  
+
   return sceneNode;
 }
 
@@ -105,7 +105,7 @@ std::shared_ptr<engine::adh::Node> engine::gltf::Builder::buildNode(size_t nodeI
   auto animation = std::make_shared<adh::Transform>(node._name.value_or(std::string()) + " animation");
   transform->addChild(animation);
   animationNodes.insert({nodeIndex, animation});
-  
+
   // Configure the transformation
   if(node._matrix)
     transform->setMatrix(*node._matrix);
@@ -130,7 +130,7 @@ std::shared_ptr<engine::adh::Node> engine::gltf::Builder::buildNode(size_t nodeI
   {
     animation->addChild(buildMesh(*node._mesh));
   }
-  
+
   return transform;
 }
 
@@ -143,9 +143,9 @@ std::unique_ptr<engine::adh::Node> engine::gltf::Builder::buildMesh(size_t meshI
   {
     auto primitiveNode = std::make_shared<adh::Primitive>(primitive._mode);
     std::vector<std::string> defines;
-    
+
     primitiveNode->bind();
-    
+
     if(primitive._indices)
     {
       setIndicesBuffer(primitiveNode, _asset->_accessors.at(*primitive._indices));
@@ -155,13 +155,13 @@ std::unique_ptr<engine::adh::Node> engine::gltf::Builder::buildMesh(size_t meshI
     {
       auto && attributeName = attr.first;
       auto && accessor = _asset->_accessors.at(attr.second);
-      
+
       size_t index = setDataBuffer(primitiveNode, accessor);
       defines.push_back("HAS_" + attributeName);
       defines.push_back(attributeName + " " + std::to_string(index));
-      
+
     }
-    
+
     if(primitive._material)
     {
       auto && material = _asset->_materials.at(*primitive._material);
@@ -180,7 +180,7 @@ std::unique_ptr<engine::adh::Node> engine::gltf::Builder::buildMesh(size_t meshI
         {
           primitiveNode->setTexture(buildTexture("metalroughnessMap", pbr._metallicRoughnessTexture->_index),
                                     GL_TEXTURE2);
-          defines.push_back("HAS_METALROUGHNESS_TEXTURE");          
+          defines.push_back("HAS_METALROUGHNESS_TEXTURE");
         }
       }
       if(material._normalTexture)
@@ -190,13 +190,13 @@ std::unique_ptr<engine::adh::Node> engine::gltf::Builder::buildMesh(size_t meshI
         defines.push_back("HAS_NORMAL_TEXTURE");
       }
     }
-    
+
     primitiveNode->setShader(getShader(defines));
     node->addChild(primitiveNode);
-    
+
     primitiveNode->unbind();
   }
-  
+
   return node;
 }
 
@@ -206,9 +206,9 @@ std::unique_ptr<engine::adh::Texture> engine::gltf::Builder::buildTexture(const 
   auto && texture = _asset->_textures.at(textureIndex);
   if(!texture._source)
     throw std::runtime_error("No source for texture " + std::to_string(textureIndex));
-  
+
   auto && image = _asset->_images.at(*texture._source);
-  
+
   if(!image._uri)
     throw std::runtime_error("No image uri in image " + std::to_string(*texture._source));
 
@@ -222,10 +222,10 @@ void engine::gltf::Builder::setIndicesBuffer(const std::shared_ptr<adh::Primitiv
   {
     auto && bufferView = _asset->_bufferViews.at(*accessor._bufferView);
     auto && buffer = _asset->_buffers.at(bufferView._buffer);
-    
+
     const char * data = buffer._data.data() + bufferView._byteOffset;
     size_t length = bufferView._byteLength;
-    
+
     primitiveNode->setIndicesBuffer(data, length,
                                     accessor._count, accessor._componentType);
   }
@@ -238,10 +238,10 @@ size_t engine::gltf::Builder::setDataBuffer(const std::shared_ptr<adh::Primitive
   {
     auto && bufferView = _asset->_bufferViews.at(*accessor._bufferView);
     auto && buffer = _asset->_buffers.at(bufferView._buffer);
-    
+
     const char * data = buffer._data.data() + bufferView._byteOffset;
     size_t length = bufferView._byteLength;
-    
+
     return primitiveNode->setDataBuffer(data,
                                         length,
                                         accessor.getComponentCount(),
@@ -271,34 +271,34 @@ std::unique_ptr<engine::adh::Interpolator<T> > engine::gltf::Builder::buildInter
     throw std::runtime_error("No buffer view for animation accessor");
   auto && tsBufferView = _asset->_bufferViews.at(*tsAccessor._bufferView);
   auto && tsBuffer = _asset->_buffers.at(tsBufferView._buffer);
-  
+
   const char * tsData = tsBuffer._data.data() + tsBufferView._byteOffset;
   const float * tsFloatData = reinterpret_cast<const float *>(tsData);
-  
+
   auto && valAccessor = _asset->_accessors.at(sampler._output);
   if(!valAccessor._bufferView)
     throw std::runtime_error("No buffer view for animation accessor");
   auto && valBufferView = _asset->_bufferViews.at(*valAccessor._bufferView);
   auto && valBuffer = _asset->_buffers.at(valBufferView._buffer);
-  
+
   const char * valData = valBuffer._data.data() + valBufferView._byteOffset;
   const T * valFloatData = reinterpret_cast<const T *>(valData);
-  
+
   if(sampler._interpolation == "LINEAR")
   {
     std::map<float, T> values;
-    
+
     for(size_t index = 0; index < tsAccessor._count; ++index)
     {
       values.insert({tsFloatData[index], valFloatData[index]});
     }
-    
+
     return std::make_unique<adh::LinearInterpolator<T> >(values);
   }
   else if(sampler._interpolation == "CUBICSPLINE")
   {
     std::map<float, std::tuple<T, T, T> > values;
-    
+
     for(size_t index = 0; index < tsAccessor._count; ++index)
     {
       values.insert({tsFloatData[index],
@@ -308,12 +308,12 @@ std::unique_ptr<engine::adh::Interpolator<T> > engine::gltf::Builder::buildInter
                       valFloatData[index * 3 + 2]
                      }});
     }
-    
+
     //for(size_t index = 0; index < tsAccessor._count * 3; ++index)
     //{
     //  std::cout << glm::to_string(valFloatData[index]) << std::endl;
     //}
-      
+
     for(auto && val : values)
     {
       std::cout << val.first

@@ -1,10 +1,10 @@
-#include "animation.h"
+#include "engine/adh/animation.h"
 
-#include "channel.h"
-#include "clock.h"
+#include "engine/core/clock.h"
+#include "engine/adh/channel.h"
 
 engine::adh::Animation::Animation(const std::string & name,
-                          const std::shared_ptr<Clock> & clock):
+                                  Clock * clock):
   _name(name),
   _clock(clock),
   _run(false),
