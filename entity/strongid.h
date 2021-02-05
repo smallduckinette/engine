@@ -11,11 +11,11 @@ namespace engine
   public:
     typedef D DiscriminantT;
     typedef T UnderlyingTypeT;
-  
+
     StrongId()
     {
     }
-      
+
     StrongId(const T & value):
       _value(value)
     {
@@ -72,14 +72,12 @@ namespace engine
       _nextValue(init)
     {
     }
-  
+
     StrongId<D, T> generate()
     {
-      StrongId<D, T> value(_nextValue);
-      _nextValue++;
-      return value;
+      return StrongId<D, T>(_nextValue++);
     }
-  
+
   private:
     T _nextValue;
   };
@@ -87,14 +85,14 @@ namespace engine
 
 namespace std
 {
-  template<typename D>
-  struct hash<engine::StrongId<D, uint32_t> >
+  template<typename D, typename T>
+  struct hash<engine::StrongId<D, T> >
   {
-    std::size_t operator()(const engine::StrongId<D, uint32_t> & id) const
+    std::size_t operator()(const engine::StrongId<D, T> & id) const
     {
-      return id.getValue();
+      return std::hash<T>{}(id.getValue());
     }
   };
 }
-  
+
 #endif

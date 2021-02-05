@@ -49,21 +49,25 @@ namespace engine
     /// Change the view
     void setView(const glm::mat4 & view);
 
+    /// Set the transform for an entity
+    void setEntityTransform(EntityId entityId, const glm::mat4 & matrix);
+
     /// Render the frame
     void display();
 
   private:
     Clock * _clock;
     std::filesystem::path _shaderDir;
+    std::filesystem::path _dataDir;
 
     std::shared_ptr<adh::Node> _root;
     std::shared_ptr<adh::Camera> _camera;
 
     /// Archetypes
-    std::unordered_map<std::string, GraphicsArchetype> _archetypes;
+    std::unordered_map<std::string, std::shared_ptr<adh::Node> > _archetypes;
 
     /// Entities
-    std::map<EntityId, std::shared_ptr<adh::Transform> > _entities;
+    std::unordered_map<EntityId, std::shared_ptr<adh::Transform> > _entities;
   };
 }
 

@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 
 #include "engine/core/serializejson.h"
+#include "engine/core/json_utils.h"
 #include "engine/adh/transform.h"
 #include "engine/adh/camera.h"
 #include "engine/adh/envmap.h"
@@ -25,7 +26,8 @@ engine::Graphics::Graphics(Clock * clock,
                            int resY,
                            const std::filesystem::path & dataDir):
   _clock(clock),
-  _shaderDir(dataDir / "shaders")
+  _shaderDir(dataDir / "shaders"),
+  _dataDir(dataDir)
 {
   if(!std::filesystem::exists(_shaderDir))
   {
@@ -58,15 +60,25 @@ engine::Graphics::Graphics(Clock * clock,
 void engine::Graphics::registerArchetype(const std::string & name,
                                          const Json::Value & doc)
 {
-  GraphicsArchetype archetype;
-  archetype.deserialize(doc);
-  registerArchetype(name, archetype);
+  const Json::Value * node = getNode(doc, "graphics");
+  if(node)
+  {
+    GraphicsArchetype archetype;
+    archetype.deserialize(*node);
+    registerArchetype(name, archetype);
+  }
 }
 
 void engine::Graphics::registerArchetype(const std::string & name,
                                          const GraphicsArchetype & archetype)
 {
-  _archetypes.emplace(name, archetype);
+  gltf::Builder builder(_clock,
+                        _shaderDir,
+                        _dataDir / archetype._model);
+  std::vector<std::unique_ptr<adh::Animation> > animations;
+  std::shared_ptr<adh::Node> model = builder.build(animations);
+
+  _archetypes.emplace(name, model);
 }
 
 void engine::Graphics::createEntity(EntityId entityId, const std::string & archetype)
@@ -74,13 +86,8 @@ void engine::Graphics::createEntity(EntityId entityId, const std::string & arche
   auto it = _archetypes.find(archetype);
   if(it != _archetypes.end())
   {
-    gltf::Builder builder(_clock,
-                          _shaderDir,
-                          it->second._model);
-
-    std::vector<std::unique_ptr<adh::Animation> > animations;
     auto transform = std::make_shared<adh::Transform>();
-    transform->addChild(builder.build(animations));
+    transform->addChild(it->second);
     _root->addChild(transform);
     _entities.emplace(entityId, transform);
   }
@@ -100,11 +107,21 @@ void engine::Graphics::setView(const glm::mat4 & view)
   _camera->setViewMatrix(view);
 }
 
+void engine::Graphics::setEntityTransform(EntityId entityId, const glm::mat4 & matrix)
+{
+  auto it = _entities.find(entityId);
+  if(it != _entities.end())
+  {
+    it->second->setMatrix(matrix);
+  }
+}
+
 void engine::Graphics::display()
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   engine::adh::Context context;
-  context._lightPosition = glm::vec3(-5.0f, 0.0f, 0.0f);
+  context._lightPosition = glm::vec3(-50.0f, 0.0f, 0.0f);
+  context._lightColor = glm::vec3(50000.0f, 50000.0f, 50000.0f);
   _camera->draw(context);
 }

@@ -6,6 +6,11 @@
 
 namespace engine
 {
+  /// Deserialize a string
+  void deserializeJson(std::string & value,
+                       const Json::Value & doc,
+                       const std::string & label);
+
   /// Deserialize a path
   void deserializeJson(std::filesystem::path & value,
                        const Json::Value & doc,
