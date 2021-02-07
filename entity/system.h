@@ -11,6 +11,16 @@ namespace engine
   class System
   {
   public:
+    /// System is default constructible
+    System() = default;
+
+    /// System is non copyable
+    System(const System & ) = delete;
+
+    /// System is non assignable
+    System & operator=(const System & ) = delete;
+
+    /// Destructor
     virtual ~System() = default;
 
     /// Register an archetype from its Json definition

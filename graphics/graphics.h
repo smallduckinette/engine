@@ -3,8 +3,7 @@
 
 #include <map>
 #include <unordered_map>
-
-#include <glm/gtx/rotate_vector.hpp>
+#include <glm/glm.hpp>
 
 #include "engine/entity/system.h"
 
