@@ -15,8 +15,8 @@ namespace po = boost::program_options;
 
 /// Emulate a bunch of user bindings from the controls config
 void makeUserBindings(const Json::Value & config,
-                      std::map<std::string, engine::Controls::BindingID> & nameToId,
-                      std::map<engine::Controls::BindingID, std::string> & idToName)
+                      std::map<std::string, engine::Controls::BindingId> & nameToId,
+                      std::map<engine::Controls::BindingId, std::string> & idToName)
 {
   if(config != Json::Value())
   {
@@ -26,7 +26,7 @@ void makeUserBindings(const Json::Value & config,
       {
         std::string name;
         engine::get(binding, "name", name);
-        engine::Controls::BindingID bindingID(nameToId.size() + 1);
+        engine::Controls::BindingId bindingID(nameToId.size() + 1);
         nameToId.emplace(name, bindingID);
         idToName.emplace(bindingID, name);
       }
@@ -55,13 +55,14 @@ int main(int argc, char ** argv)
         str >> jsonConfig;
       }
 
-      std::map<std::string, engine::Controls::BindingID> nameToId;
-      std::map<engine::Controls::BindingID, std::string> idToName;
+      std::map<std::string, engine::Controls::BindingId> nameToId;
+      std::map<engine::Controls::BindingId, std::string> idToName;
       makeUserBindings(jsonConfig, nameToId, idToName);
-      engine::Controls controls(jsonConfig, nameToId);
+      engine::Controls controls;
+      controls.initConfig(jsonConfig, nameToId);
 
       controls.onButton().connect
-        ([&idToName](engine::Controls::BindingID bindingID)
+        ([&idToName](engine::Controls::BindingId bindingID)
          {
            auto it = idToName.find(bindingID);
            if(it != idToName.end())
@@ -71,7 +72,7 @@ int main(int argc, char ** argv)
          });
 
       controls.onAxis().connect
-        ([&idToName](engine::Controls::BindingID bindingID, int value)
+        ([&idToName](engine::Controls::BindingId bindingID, int value)
          {
            auto it = idToName.find(bindingID);
            if(it != idToName.end())

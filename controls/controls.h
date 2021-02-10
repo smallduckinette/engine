@@ -14,29 +14,31 @@ namespace engine
   {
   public:
     class BindingDiscriminant;
-    using BindingID = StrongId<BindingDiscriminant, unsigned int>;
+    using BindingId = StrongId<BindingDiscriminant, unsigned int>;
 
-    Controls(const Json::Value & config,
-             const std::map<std::string, BindingID> & userBindings);
+    Controls();
 
+    /// Init controls
+    void initConfig(const Json::Value & config,
+                    const std::map<std::string, BindingId> & userBindings);
+
+    /// Process events
     void process(const SDL_Event & event);
 
     /// Signal triggered when a button is pushed
-    Signal<BindingID> & onButton();
+    Signal<BindingId> & onButton();
 
     /// Signal triggered when an axis is moved
-    Signal<BindingID, int> & onAxis();
+    Signal<BindingId, int> & onAxis();
 
   private:
     struct DeviceBindings
     {
-      std::unordered_map<unsigned int, BindingID> _buttons;
-      std::unordered_map<unsigned int, BindingID> _axis;
+      std::unordered_map<unsigned int, BindingId> _buttons;
+      std::unordered_map<unsigned int, BindingId> _axis;
     };
 
     void initSDL();
-    void initConfig(const Json::Value & config,
-                    const std::map<std::string, BindingID> & userBindings);
 
     void onButton(const SDL_JoyButtonEvent & event);
     void onAxis(const SDL_JoyAxisEvent & event);
@@ -45,8 +47,10 @@ namespace engine
     std::map<std::string, unsigned int> _guidToIndex;
     std::unordered_map<unsigned int, DeviceBindings> _deviceBindings;
 
-    Signal<BindingID> _buttonSignal;
-    Signal<BindingID, int> _axisSignal;
+    Signal<BindingId> _buttonSignal;
+    Signal<BindingId, int> _axisSignal;
+
+
   };
 }
 

@@ -12,7 +12,8 @@ namespace engine
     typedef D DiscriminantT;
     typedef T UnderlyingTypeT;
 
-    StrongId()
+    StrongId():
+      _value(T())
     {
     }
 

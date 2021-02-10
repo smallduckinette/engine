@@ -5,12 +5,9 @@
 #include "engine/core/json_utils.h"
 
 
-engine::Controls::Controls(const Json::Value & config,
-                           const std::map<std::string, BindingID> & userBindings)
+engine::Controls::Controls()
 {
   initSDL();
-
-  initConfig(config, userBindings);
 }
 
 void engine::Controls::process(const SDL_Event & event)
@@ -32,12 +29,12 @@ void engine::Controls::process(const SDL_Event & event)
   }
 }
 
-engine::Signal<engine::Controls::BindingID> & engine::Controls::onButton()
+engine::Signal<engine::Controls::BindingId> & engine::Controls::onButton()
 {
   return _buttonSignal;
 }
 
-engine::Signal<engine::Controls::BindingID, int> & engine::Controls::onAxis()
+engine::Signal<engine::Controls::BindingId, int> & engine::Controls::onAxis()
 {
   return _axisSignal;
 }
@@ -69,7 +66,7 @@ void engine::Controls::initSDL()
 }
 
 void engine::Controls::initConfig(const Json::Value & config,
-                                  const std::map<std::string, BindingID> & userBindings)
+                                  const std::map<std::string, BindingId> & userBindings)
 {
   BOOST_LOG_TRIVIAL(debug) << "Reading configuration";
 
@@ -135,7 +132,7 @@ void engine::Controls::onButton(const SDL_JoyButtonEvent & event)
     auto it_button = bindings._buttons.find(event.button);
     if(it_button != bindings._buttons.end())
     {
-      BindingID bindingID = it_button->second;
+      BindingId bindingID = it_button->second;
       if(event.type == SDL_JOYBUTTONDOWN)
       {
         _buttonSignal.emit(bindingID);
@@ -160,7 +157,7 @@ void engine::Controls::onAxis(const SDL_JoyAxisEvent & event)
     auto it_axis = bindings._axis.find(event.axis);
     if(it_axis != bindings._axis.end())
     {
-      BindingID bindingID = it_axis->second;
+      BindingId bindingID = it_axis->second;
       _axisSignal.emit(bindingID, event.value);
     }
   }

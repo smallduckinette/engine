@@ -104,6 +104,7 @@ void engine::Graphics::addEnvmap(const std::filesystem::path & envMap)
 
 void engine::Graphics::setView(const glm::mat4 & view)
 {
+
   _camera->setViewMatrix(view);
 }
 
