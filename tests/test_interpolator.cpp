@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(testLinearInterpolatorVec3)
        {5, glm::vec3(4, 3, 0)}
      }
      );
-  
+
   BOOST_CHECK_EQUAL(i.get(0), glm::vec3(0, 1, 0));
   BOOST_CHECK_EQUAL(i.get(1), glm::vec3(0, 1, 0));
   BOOST_CHECK_EQUAL(i.get(2), glm::vec3(1, 1, 0));
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(testCubicSplineInterpolator)
   BOOST_CHECK_CLOSE(i.get(5), 7.21875, 0.01);
   BOOST_CHECK_CLOSE(i.get(6), 8, 0.01);
   BOOST_CHECK_CLOSE(i.get(7), 8, 0.01);
-  
+
   BOOST_CHECK_CLOSE(i.getMax(), 6, 0.01);
 }
 

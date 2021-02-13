@@ -2,7 +2,8 @@ add_executable(
   engine_test
   test_gltf.cpp
   test_interpolator.cpp
-  test_main.cpp)
+  test_main.cpp
+  test_mapping.cpp)
 
 target_include_directories(
   engine_test
