@@ -11,6 +11,7 @@ add_library(
   adh/texture.cpp
   adh/texturecubemap.cpp
   adh/transform.cpp
+  controls/bindings.cpp
   controls/controls.cpp
   core/app.cpp
   core/logging.cpp

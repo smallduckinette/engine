@@ -15,6 +15,11 @@ namespace engine
   void deserializeJson(std::filesystem::path & value,
                        const Json::Value & doc,
                        const std::string & label);
+
+  /// Deserialize an int
+  void deserializeJson(int & value,
+                       const Json::Value & doc,
+                       const std::string & label);
 }
 
 #endif

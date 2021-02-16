@@ -48,18 +48,18 @@ int main(int argc, char ** argv)
     {
       BOOST_LOG_TRIVIAL(info) << "Init SDL";
 
-      Json::Value jsonConfig;
-      if(!config.empty())
-      {
-        std::ifstream str(config);
-        str >> jsonConfig;
-      }
+      engine::Controls controls;
 
       std::map<std::string, engine::Controls::BindingId> nameToId;
       std::map<engine::Controls::BindingId, std::string> idToName;
-      makeUserBindings(jsonConfig, nameToId, idToName);
-      engine::Controls controls;
-      controls.initConfig(jsonConfig, nameToId);
+      if(!config.empty())
+      {
+        Json::Value jsonConfig;
+        std::ifstream str(config);
+        str >> jsonConfig;
+        makeUserBindings(jsonConfig, nameToId, idToName);
+        controls.initConfig(jsonConfig, nameToId);
+      }
 
       controls.onButton().connect
         ([&idToName](engine::Controls::BindingId bindingID)
