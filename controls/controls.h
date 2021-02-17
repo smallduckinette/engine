@@ -7,6 +7,7 @@
 
 #include "engine/entity/strongid.h"
 #include "engine/entity/signal.h"
+#include "engine/controls/mapping.h"
 
 namespace engine
 {
@@ -15,6 +16,8 @@ namespace engine
   public:
     class BindingDiscriminant;
     using BindingId = StrongId<BindingDiscriminant, unsigned int>;
+
+    using AxisMapping = Mapping<int16_t, float>;
 
     Controls();
 
@@ -29,13 +32,19 @@ namespace engine
     Signal<BindingId> & onButton();
 
     /// Signal triggered when an axis is moved
-    Signal<BindingId, int> & onAxis();
+    Signal<BindingId, float> & onAxis();
 
   private:
+    struct AxisBinding
+    {
+      BindingId _bindingId;
+      AxisMapping _mapping;
+    };
+
     struct DeviceBindings
     {
       std::unordered_map<unsigned int, BindingId> _buttons;
-      std::unordered_map<unsigned int, BindingId> _axis;
+      std::unordered_map<unsigned int, AxisBinding> _axis;
     };
 
     void initSDL();
@@ -48,9 +57,7 @@ namespace engine
     std::unordered_map<unsigned int, DeviceBindings> _deviceBindings;
 
     Signal<BindingId> _buttonSignal;
-    Signal<BindingId, int> _axisSignal;
-
-
+    Signal<BindingId, float> _axisSignal;
   };
 }
 

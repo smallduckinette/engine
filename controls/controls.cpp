@@ -35,7 +35,7 @@ engine::Signal<engine::Controls::BindingId> & engine::Controls::onButton()
   return _buttonSignal;
 }
 
-engine::Signal<engine::Controls::BindingId, int> & engine::Controls::onAxis()
+engine::Signal<engine::Controls::BindingId, float> & engine::Controls::onAxis()
 {
   return _axisSignal;
 }
@@ -98,7 +98,27 @@ void engine::Controls::initConfig(const Json::Value & config,
         }
         else if(configBinding._type == "axis")
         {
-          bindings._axis.insert_or_assign(configBinding._id, itb->second);
+          if(configBinding._mapping)
+          {
+            bindings._axis.insert_or_assign
+              (configBinding._id,
+               AxisBinding{itb->second,
+                             AxisMapping(configBinding._mapping->_fromMin,
+                                         configBinding._mapping->_fromMax,
+                                         configBinding._mapping->_toMin,
+                                         configBinding._mapping->_toMax)});
+          }
+          else
+          {
+            bindings._axis.insert_or_assign
+              (configBinding._id,
+               AxisBinding{itb->second,
+                             AxisMapping(std::numeric_limits<int16_t>::min(),
+                                         std::numeric_limits<int16_t>::max(),
+                                         std::numeric_limits<int16_t>::min(),
+                                         std::numeric_limits<int16_t>::max())});
+          }
+
           BOOST_LOG_TRIVIAL(info) << "Device " << configDevice._guid << "[" << it->second << "] axis " << configBinding._id << " assigned to event " << configBinding._name << "[" << itb->second << "]";
         }
       }
@@ -148,8 +168,8 @@ void engine::Controls::onAxis(const SDL_JoyAxisEvent & event)
     auto it_axis = bindings._axis.find(event.axis);
     if(it_axis != bindings._axis.end())
     {
-      BindingId bindingID = it_axis->second;
-      _axisSignal.emit(bindingID, event.value);
+      onAxis().emit(it_axis->second._bindingId,
+                    it_axis->second._mapping.map(event.value));
     }
   }
 }

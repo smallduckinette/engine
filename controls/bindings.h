@@ -7,6 +7,19 @@ namespace engine
 {
   namespace controls
   {
+    class Mapping
+    {
+    public:
+      void deserialize(const Json::Value & doc);
+
+      auto operator<=>(const Mapping &) const = default;
+
+      int _fromMin;
+      int _fromMax;
+      float _toMin;
+      float _toMax;
+    };
+
     class Binding
     {
     public:
@@ -17,6 +30,7 @@ namespace engine
       std::string _type;
       std::string _name;
       int _id;
+      std::optional<Mapping> _mapping;
     };
 
     class Device

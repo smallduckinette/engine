@@ -72,7 +72,7 @@ int main(int argc, char ** argv)
          });
 
       controls.onAxis().connect
-        ([&idToName](engine::Controls::BindingId bindingID, int value)
+        ([&idToName](engine::Controls::BindingId bindingID, float value)
          {
            auto it = idToName.find(bindingID);
            if(it != idToName.end())
