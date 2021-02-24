@@ -3,6 +3,7 @@
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/console.hpp>
+#include <SDL2/SDL_ttf.h>
 
 #include "engine/core/logging.h"
 #include "engine/core/rtclock.h"
@@ -19,6 +20,14 @@ engine::App::App():
   _desc.add_options()
     ("help", "Displays help")
     ("verbose,v", "Verbose logging");
+}
+
+engine::App::~App()
+{
+  if(TTF_WasInit())
+  {
+    TTF_Quit();
+  }
 }
 
 engine::App & engine::App::enableGraphics()
@@ -61,6 +70,7 @@ bool engine::App::run(int argc, char ** argv)
     {
       initGraphics();
     }
+    initTTF();
 
     return true;
   }
@@ -122,6 +132,13 @@ void engine::App::initGraphics()
 
   _glContext.reset(SDL_GL_CreateContext(_window.get()));
 
-  if(has("vsync"))
-    SDL_GL_SetSwapInterval(1);
+  SDL_GL_SetSwapInterval(has("vsync") ? 1 : 0);
+}
+
+void engine::App::initTTF()
+{
+  if(TTF_Init() != 0)
+  {
+    throw std::runtime_error(std::string("Failed to initialise TTF : ") + TTF_GetError());
+  }
 }

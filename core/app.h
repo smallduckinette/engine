@@ -14,6 +14,7 @@ namespace engine
   {
   public:
     App();
+    ~App();
 
     App & enableGraphics();
 
@@ -40,6 +41,7 @@ namespace engine
 
   private:
     void initGraphics();
+    void initTTF();
 
     po::options_description _desc;
     po::variables_map _vm;

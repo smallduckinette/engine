@@ -10,10 +10,6 @@ engine::adh::EnvMap::EnvMap(const std::shared_ptr<TextureCubeMap> & texture,
 {
 }
 
-engine::adh::EnvMap::~EnvMap()
-{
-}
-
 void engine::adh::EnvMap::draw(Context & context) const
 {
   _texture->bind(GL_TEXTURE0);

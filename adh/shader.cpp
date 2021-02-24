@@ -12,13 +12,13 @@ engine::adh::Shader::Shader(std::istream & vertex,
 {
   GLuint vertexId = glCreateShader(GL_VERTEX_SHADER);
   GLuint fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
-  
+
   compile(vertexId, vertex, defines);
   compile(fragmentId, fragment, defines);
   glAttachShader(_programId, vertexId);
   glAttachShader(_programId, fragmentId);
   glLinkProgram(_programId);
-  
+
   GLint success;
   GLchar infoLog[1024];
   glGetProgramiv(_programId, GL_LINK_STATUS, &success);
@@ -26,8 +26,8 @@ engine::adh::Shader::Shader(std::istream & vertex,
   {
     glGetProgramInfoLog(_programId, 1024, NULL, infoLog);
     std::cout << "Error linking shader : " << infoLog << std::endl;
-  }  
-  
+  }
+
   glDeleteShader(vertexId);
   glDeleteShader(fragmentId);
 }
@@ -62,6 +62,11 @@ void engine::adh::Shader::setInteger(const std::string & name, int value)
   glUniform1i(glGetUniformLocation(_programId, name.c_str()), value);
 }
 
+void engine::adh::Shader::setFloat(const std::string & name, float value)
+{
+  glUniform1f(glGetUniformLocation(_programId, name.c_str()), value);
+}
+
 void engine::adh::Shader::compile(GLuint id,
                           std::istream & str,
                           const std::vector<std::string> & defines) const
@@ -71,13 +76,13 @@ void engine::adh::Shader::compile(GLuint id,
                               defines.end(),
                               std::string(),
                               [](auto && acc, auto && d) { return acc + "#define " + d + "\n"; });
-  
+
   auto source = std::string(std::istreambuf_iterator<char>(str),
                             std::istreambuf_iterator<char>());
   const char * sources[] = {version.c_str(), defs.c_str(), source.c_str()};
   glShaderSource(id, 3, sources, NULL);
   glCompileShader(id);
-  
+
   GLint success;
   GLchar infoLog[1024];
   glGetShaderiv(id, GL_COMPILE_STATUS, &success);

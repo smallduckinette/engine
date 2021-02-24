@@ -5,6 +5,7 @@ add_library(
   adh/camera.cpp
   adh/context.cpp
   adh/envmap.cpp
+  adh/hud.cpp
   adh/node.cpp
   adh/primitive.cpp
   adh/shader.cpp
@@ -37,7 +38,8 @@ target_link_libraries(
   OpenGL::OpenGL
   PkgConfig::JSONCPP
   PkgConfig::SDL2
-  PkgConfig::SDL2IMAGE)
+  PkgConfig::SDL2IMAGE
+  PkgConfig::SDL2TTF)
 
 add_subdirectory(app)
 add_subdirectory(tests)

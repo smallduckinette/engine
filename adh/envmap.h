@@ -15,7 +15,6 @@ namespace engine::adh
   public:
     EnvMap(const std::shared_ptr<TextureCubeMap> & texture,
            const std::shared_ptr<Shader> & shader);
-    ~EnvMap();
 
     void draw(Context & context) const override;
 

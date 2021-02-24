@@ -4,12 +4,14 @@
 #include <map>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include <SDL2/SDL_ttf.h>
 
 #include "engine/entity/system.h"
 
 namespace engine::adh { class Node; }
 namespace engine::adh { class Camera; }
 namespace engine::adh { class Transform; }
+namespace engine::adh { class Texture; }
 
 namespace engine
 {
@@ -51,15 +53,22 @@ namespace engine
     /// Set the transform for an entity
     void setEntityTransform(EntityId entityId, const glm::mat4 & matrix);
 
+    /// Enable the FPS
+    void displayFps(bool fps);
+
     /// Render the frame
     void display();
 
   private:
+    /// Setup the console
+    void setupConsole();
+
     Clock * _clock;
     std::filesystem::path _shaderDir;
     std::filesystem::path _dataDir;
 
     std::shared_ptr<adh::Node> _root;
+    std::shared_ptr<adh::Node> _hudRoot;
     std::shared_ptr<adh::Camera> _camera;
 
     /// Archetypes
@@ -67,6 +76,25 @@ namespace engine
 
     /// Entities
     std::unordered_map<EntityId, std::shared_ptr<adh::Transform> > _entities;
+
+    /// Resolution
+    int _resX;
+    int _resY;
+
+    /// Basic HUD font
+    std::unique_ptr<TTF_Font, decltype(&TTF_CloseFont)> _font;
+
+    /// Console texture
+    std::shared_ptr<adh::Texture> _console;
+
+    /// Do we want to display FPS?
+    bool _fpsEnabled;
+
+    /// Frame number for statistics
+    int _frameNumber;
+
+    /// Timestamp of first frame for statistics
+    float _timestamp;
   };
 }
 

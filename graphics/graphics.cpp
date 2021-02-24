@@ -7,12 +7,15 @@
 
 #include "engine/core/serializejson.h"
 #include "engine/core/json_utils.h"
+#include "engine/core/clock.h"
 #include "engine/adh/transform.h"
 #include "engine/adh/camera.h"
 #include "engine/adh/envmap.h"
 #include "engine/adh/texturecubemap.h"
 #include "engine/adh/shader.h"
 #include "engine/adh/animation.h"
+#include "engine/adh/hud.h"
+#include "engine/adh/texture.h"
 #include "engine/gltf/builder.h"
 
 
@@ -27,11 +30,22 @@ engine::Graphics::Graphics(Clock * clock,
                            const std::filesystem::path & dataDir):
   _clock(clock),
   _shaderDir(dataDir / "shaders"),
-  _dataDir(dataDir)
+  _dataDir(dataDir),
+  _resX(resX),
+  _resY(resY),
+  _font(TTF_OpenFont((_dataDir / "fonts" / "DejaVuSans.ttf").c_str(), 14), TTF_CloseFont),
+  _fpsEnabled(false),
+  _frameNumber(0),
+  _timestamp(0)
 {
   if(!std::filesystem::exists(_shaderDir))
   {
     throw std::runtime_error("Cannot find shader directory " + _shaderDir.native());
+  }
+
+  if(!_font.get())
+  {
+    throw std::runtime_error(std::string("Failed to load font : ") + TTF_GetError());
   }
 
   glewExperimental = GL_TRUE;
@@ -49,12 +63,17 @@ engine::Graphics::Graphics(Clock * clock,
   BOOST_LOG_TRIVIAL(info) << "Renderer: " << renderer;
   BOOST_LOG_TRIVIAL(info) << "Version: " << version;
 
-  _root = std::make_shared<engine::adh::Transform>();
-  _camera = std::make_shared<engine::adh::Camera>(glm::radians(45.0f),
-                                                  (float)resX / (float)resY,
-                                                  0.1f,
-                                                  10000.0f);
+  _root = std::make_shared<adh::Transform>();
+  _hudRoot = std::make_shared<adh::Transform>();
+  _camera = std::make_shared<adh::Camera>(glm::radians(45.0f),
+                                          (float)resX / (float)resY,
+                                          0.1f,
+                                          10000.0f);
   _camera->addChild(_root);
+  _camera->addChild(_hudRoot);
+
+  // Setup the console
+  setupConsole();
 }
 
 void engine::Graphics::registerArchetype(const std::string & name,
@@ -97,14 +116,13 @@ void engine::Graphics::addEnvmap(const std::filesystem::path & envMap)
 {
   std::ifstream vertex(_shaderDir / "envmap.vert");
   std::ifstream fragment(_shaderDir / "envmap.frag");
-  _camera->addChild(std::make_shared<engine::adh::EnvMap>
-                    (std::make_shared<engine::adh::TextureCubeMap>("texture", envMap),
-                     std::make_shared<engine::adh::Shader>(vertex, fragment)));
+  _camera->addChild(std::make_shared<adh::EnvMap>
+                    (std::make_shared<adh::TextureCubeMap>("texture", envMap),
+                     std::make_shared<adh::Shader>(vertex, fragment)));
 }
 
 void engine::Graphics::setView(const glm::mat4 & view)
 {
-
   _camera->setViewMatrix(view);
 }
 
@@ -117,12 +135,48 @@ void engine::Graphics::setEntityTransform(EntityId entityId, const glm::mat4 & m
   }
 }
 
+void engine::Graphics::displayFps(bool fps)
+{
+  _fpsEnabled = fps;
+  if(!_fpsEnabled)
+  {
+    _console->setText(_font.get(),
+                      SDL_Color{255, 0, 0, 255},
+                      "");
+  }
+}
+
 void engine::Graphics::display()
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  engine::adh::Context context;
+  adh::Context context(_resX, _resY);
   context._lightPosition = glm::vec3(-50.0f, 0.0f, 0.0f);
   context._lightColor = glm::vec3(50000.0f, 50000.0f, 50000.0f);
   _camera->draw(context);
+
+  // Statistics
+  ++_frameNumber;
+  if(_frameNumber == 100)
+  {
+    float timestamp2 = _clock->getTimestamp();
+    int fps = 100 / (timestamp2 - _timestamp);
+    _frameNumber = 0;
+    _timestamp = timestamp2;
+    if(_fpsEnabled)
+    {
+      _console->setText(_font.get(),
+                        SDL_Color{255, 0, 0, 255},
+                        std::to_string(fps));
+    }
+  }
+}
+
+void engine::Graphics::setupConsole()
+{
+  std::ifstream vertex(_shaderDir / "hud.vert");
+  std::ifstream fragment(_shaderDir / "hud.frag");
+  _console = std::make_shared<adh::Texture>("console");
+  _hudRoot->addChild(std::make_shared<adh::Hud>(_console,
+                                                std::make_shared<adh::Shader>(vertex, fragment)));
 }
