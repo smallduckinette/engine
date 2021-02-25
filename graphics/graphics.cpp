@@ -157,10 +157,10 @@ void engine::Graphics::display()
 
   // Statistics
   ++_frameNumber;
-  if(_frameNumber == 100)
+  float timestamp2 = _clock->getTimestamp();
+  if(timestamp2 - _timestamp > 0.5)
   {
-    float timestamp2 = _clock->getTimestamp();
-    int fps = 100 / (timestamp2 - _timestamp);
+    int fps = _frameNumber / (timestamp2 - _timestamp);
     _frameNumber = 0;
     _timestamp = timestamp2;
     if(_fpsEnabled)
