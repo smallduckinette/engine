@@ -22,7 +22,8 @@ add_library(
   entity/entitylibrary.cpp
   gltf/asset.cpp
   gltf/builder.cpp
-  graphics/graphics.cpp)
+  graphics/graphics.cpp
+  sounds/sounds.cpp)
 
 target_include_directories(
   engine

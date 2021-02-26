@@ -27,6 +27,7 @@ namespace engine
     std::filesystem::path _model;
   };
 
+  /// The graphics system
   class Graphics : public System
   {
   public:
