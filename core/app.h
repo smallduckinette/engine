@@ -3,6 +3,8 @@
 
 #include <boost/program_options.hpp>
 #include <SDL2/SDL.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 
 namespace po = boost::program_options;
 
@@ -17,6 +19,8 @@ namespace engine
     ~App();
 
     App & enableGraphics();
+
+    App & enableAudio();
 
     /// Add additional options to the application
     po::options_description_easy_init add_options();
@@ -39,14 +43,22 @@ namespace engine
     /// Y resolution
     int resY() const;
 
+    /// The audio device
+    ALCdevice * audioDevice();
+
+    /// The audio context
+    ALCcontext * audioContext();
+
   private:
     void initGraphics();
     void initTTF();
+    void initAudio();
 
     po::options_description _desc;
     po::variables_map _vm;
 
     bool _graphics;
+    bool _audio;
 
     // Graphics parameters
     int _resX;
@@ -57,6 +69,9 @@ namespace engine
 
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> _window;
     std::unique_ptr<void, decltype(&SDL_GL_DeleteContext)> _glContext;
+
+    std::unique_ptr<ALCdevice, decltype(&alcCloseDevice)> _alcDevice;
+    std::unique_ptr<ALCcontext, decltype(&alcDestroyContext)> _alcContext;
   };
 }
 

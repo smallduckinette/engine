@@ -15,6 +15,7 @@ add_library(
   controls/bindings.cpp
   controls/controls.cpp
   core/app.cpp
+  core/audio.cpp
   core/logging.cpp
   core/json_utils.cpp
   core/rtclock.cpp
@@ -38,6 +39,7 @@ target_link_libraries(
   GLEW::GLEW
   OpenGL::OpenGL
   PkgConfig::JSONCPP
+  PkgConfig::OPENAL
   PkgConfig::SDL2
   PkgConfig::SDL2IMAGE
   PkgConfig::SDL2TTF)

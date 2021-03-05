@@ -7,15 +7,19 @@
 
 #include "engine/core/logging.h"
 #include "engine/core/rtclock.h"
+#include "engine/core/audio.h"
 
 engine::App::App():
   _desc("Options"),
   _graphics(false),
+  _audio(false),
   _resX(0),
   _resY(0),
   _clock(std::make_shared<RtClock>()),
   _window(nullptr, SDL_DestroyWindow),
-  _glContext(nullptr, SDL_GL_DeleteContext)
+  _glContext(nullptr, SDL_GL_DeleteContext),
+  _alcDevice(nullptr, alcCloseDevice),
+  _alcContext(nullptr, alcDestroyContext)
 {
   _desc.add_options()
     ("help", "Displays help")
@@ -39,6 +43,13 @@ engine::App & engine::App::enableGraphics()
     ("y", po::value<int>(&_resY)->default_value(1024), "Y resolution")
     ("full-screen", "Full screen")
     ("vsync", "Enable vertical synchronization");
+
+  return *this;
+}
+
+engine::App & engine::App::enableAudio()
+{
+  _audio = true;
 
   return *this;
 }
@@ -71,6 +82,10 @@ bool engine::App::run(int argc, char ** argv)
       initGraphics();
     }
     initTTF();
+    if(_audio)
+    {
+      initAudio();
+    }
 
     return true;
   }
@@ -99,6 +114,16 @@ int engine::App::resX() const
 int engine::App::resY() const
 {
   return _resY;
+}
+
+ALCdevice * engine::App::audioDevice()
+{
+  return _alcDevice.get();
+}
+
+ALCcontext * engine::App::audioContext()
+{
+  return _alcContext.get();
 }
 
 void engine::App::initGraphics()
@@ -141,4 +166,30 @@ void engine::App::initTTF()
   {
     throw std::runtime_error(std::string("Failed to initialise TTF : ") + TTF_GetError());
   }
+}
+
+void engine::App::initAudio()
+{
+  BOOST_LOG_TRIVIAL(info) << "Init audio";
+
+  const char * deviceName = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
+  if(alcGetError(nullptr) != ALC_NO_ERROR)
+    throw std::runtime_error(std::string("Failed to get default audio device : ")
+                             + getAlcErrorString());
+
+  BOOST_LOG_TRIVIAL(info) << "Default audio device is " << deviceName;
+
+  _alcDevice.reset(alcOpenDevice(deviceName));
+  if(alcGetError(nullptr) != ALC_NO_ERROR)
+    throw std::runtime_error(std::string("Failed to initialise audio : ")
+                             + getAlcErrorString());
+
+  _alcContext.reset(alcCreateContext(_alcDevice.get(), nullptr));
+  if(alcGetError(nullptr) != ALC_NO_ERROR)
+    throw std::runtime_error(std::string("Failed to initialise audio : ")
+                             + getAlcErrorString());
+
+  if(!alcMakeContextCurrent(audioContext()))
+    throw std::runtime_error(std::string("Failed to make audio context current : ")
+                             + getAlcErrorString());
 }

@@ -14,6 +14,13 @@ add_executable(
 target_link_libraries(
   input
   PRIVATE
-  engine
-  Boost::program_options
-  Boost::log)
+  engine)
+
+add_executable(
+  dj
+  dj.cpp)
+
+target_link_libraries(
+  dj
+  PRIVATE
+  engine)
