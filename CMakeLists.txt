@@ -24,7 +24,8 @@ add_library(
   gltf/asset.cpp
   gltf/builder.cpp
   graphics/graphics.cpp
-  sounds/sounds.cpp)
+  sounds/sounds.cpp
+  sounds/streamable.cpp)
 
 target_include_directories(
   engine
@@ -42,7 +43,9 @@ target_link_libraries(
   PkgConfig::OPENAL
   PkgConfig::SDL2
   PkgConfig::SDL2IMAGE
-  PkgConfig::SDL2TTF)
+  PkgConfig::SDL2TTF
+  PkgConfig::VORBIS
+  PkgConfig::VORBISFILE)
 
 add_subdirectory(app)
 add_subdirectory(tests)
