@@ -54,3 +54,13 @@ size_t engine::VorbisStreamable::stream(char * buffer, size_t bufferSize)
   }
   return totalRead;
 }
+
+int engine::VorbisStreamable::getBitrate() const
+{
+  return _vorbisInfo->rate;
+}
+
+int engine::VorbisStreamable::getNumChannels() const
+{
+  return _vorbisInfo->channels;
+}

@@ -19,6 +19,12 @@ namespace engine
     /// lower than bufferSize, then we know we have reached the end
     /// @throws std::exception when failing to read the data
     virtual size_t stream(char * buffer, size_t bufferSize) = 0;
+
+    /// @returns the bitrate for the streamable
+    virtual int getBitrate() const = 0;
+
+    /// @returns the number of channels for the streamable
+    virtual int getNumChannels() const = 0;
   };
 
   /// Vorbis implementation of the Streamable interface
@@ -29,6 +35,10 @@ namespace engine
 
     /// Implementation of the Streamable interface
     size_t stream(char * buffer, size_t bufferSize) override;
+
+    int getBitrate() const override;
+
+    int getNumChannels() const override;
 
   private:
     std::unique_ptr<FILE, decltype(&fclose)> _file;

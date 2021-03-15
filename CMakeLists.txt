@@ -24,6 +24,7 @@ add_library(
   gltf/asset.cpp
   gltf/builder.cpp
   graphics/graphics.cpp
+  sounds/music.cpp
   sounds/sounds.cpp
   sounds/streamable.cpp)
 

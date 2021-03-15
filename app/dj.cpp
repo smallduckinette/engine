@@ -2,6 +2,7 @@
 
 #include "engine/core/app.h"
 #include "engine/sounds/streamable.h"
+#include "engine/sounds/music.h"
 
 #include <iostream>
 
@@ -21,16 +22,9 @@ int main(int argc, char ** argv)
 
     if(app.run(argc, argv))
     {
-      engine::VorbisStreamable streamable(audioFile);
-
-      char data[4096];
-      size_t readData = 0;
-      size_t totalData = 0;
-      while((readData = streamable.stream(data, 4096)) > 0)
-      {
-        totalData += readData;
-        std::cout << "We have read " << readData << ", total " << totalData << std::endl;
-      }
+      auto streamable = std::make_shared<engine::VorbisStreamable>(audioFile);
+      engine::Music music;
+      music.play(streamable);
 
       std::string command;
       do
