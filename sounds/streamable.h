@@ -23,6 +23,9 @@ namespace engine
     /// @returns the bitrate for the streamable
     virtual int getBitrate() const = 0;
 
+    /// @returns the nominal bitrate
+    virtual int getNominalBitrate() const = 0;
+
     /// @returns the number of channels for the streamable
     virtual int getNumChannels() const = 0;
   };
@@ -37,7 +40,7 @@ namespace engine
     size_t stream(char * buffer, size_t bufferSize) override;
 
     int getBitrate() const override;
-
+    int getNominalBitrate() const override;
     int getNumChannels() const override;
 
   private:

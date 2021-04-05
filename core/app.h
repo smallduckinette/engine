@@ -2,6 +2,7 @@
 #define __CORE_APP_H__
 
 #include <boost/program_options.hpp>
+#include <boost/asio.hpp>
 #include <SDL2/SDL.h>
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -21,6 +22,8 @@ namespace engine
     App & enableGraphics();
 
     App & enableAudio();
+
+    App & enableAsio();
 
     /// Add additional options to the application
     po::options_description_easy_init add_options();
@@ -49,7 +52,14 @@ namespace engine
     /// The audio context
     ALCcontext * audioContext();
 
+    /// The asio context
+    boost::asio::io_context * asioContext();
+
+    /// Turn off asio context
+    void stopAsio();
+
   private:
+    void initAsio();
     void initGraphics();
     void initTTF();
     void initAudio();
@@ -59,13 +69,22 @@ namespace engine
 
     bool _graphics;
     bool _audio;
+    bool _asio;
 
     // Graphics parameters
     int _resX;
     int _resY;
 
+    // Asio parameters
+    unsigned int _nbAsioThreads;
+
     // Services
     std::shared_ptr<Clock> _clock;
+
+    std::shared_ptr<boost::asio::io_context> _asioContext;
+    using work_guard = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+    std::shared_ptr<work_guard> _workGuard;
+    std::vector<std::thread> _asioThreads;
 
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> _window;
     std::unique_ptr<void, decltype(&SDL_GL_DeleteContext)> _glContext;

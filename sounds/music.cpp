@@ -1,10 +1,17 @@
 #include "engine/sounds/music.h"
 
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "engine/sounds/streamable.h"
 
 
-engine::Music::Music()
+engine::Music::Music(boost::asio::io_context * ioContext):
+  _ioContext(ioContext),
+  _strand(boost::asio::make_strand(*_ioContext)),
+  _bufferDuration(std::chrono::seconds(5)),
+  _bufferRefreshInterval(std::chrono::milliseconds(_bufferDuration) / 2),
+  _timer(_strand)
 {
   alGenBuffers(2, _buffers);
   alGenSources(1, &_source);
@@ -25,22 +32,72 @@ engine::Music::~Music()
 
 void engine::Music::play(const std::shared_ptr<Streamable> & streamable)
 {
-  stream(_buffers[0], streamable);
-  stream(_buffers[1], streamable);
+  boost::asio::post(_strand,
+                    std::bind(&Music::doPlay, this, streamable));
+}
+
+void engine::Music::doPlay(const std::shared_ptr<Streamable> & streamable)
+{
+  assert(_strand.running_in_this_thread());
+
+  doStream(_buffers[0], streamable);
+  doStream(_buffers[1], streamable);
 
   alSourceQueueBuffers(_source, 2, _buffers);
 
   alSourcePlay(_source);
+
+  _timer.expires_after(_bufferRefreshInterval);
+  _timer.async_wait(std::bind(&Music::doRefresh, this, std::placeholders::_1, streamable));
 }
 
-void engine::Music::stream(ALuint buffer, const std::shared_ptr<Streamable> & streamable)
+bool engine::Music::doStream(ALuint buffer, const std::shared_ptr<Streamable> & streamable)
 {
-  _streamBuffer.resize(streamable->getBitrate() * 2 * streamable->getNumChannels());
+  assert(_strand.running_in_this_thread());
+
+  _streamBuffer.resize(streamable->getNominalBitrate() * _bufferDuration.count());
   size_t size = streamable->stream(&_streamBuffer[0], _streamBuffer.size());
 
-  alBufferData(buffer,
-               streamable->getNumChannels() == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16,
-               &_streamBuffer[0],
-               size,
-               streamable->getBitrate());
+  if(size > 0)
+  {
+    alBufferData(buffer,
+                 streamable->getNumChannels() == 1 ? AL_FORMAT_MONO16 : AL_FORMAT_STEREO16,
+                 &_streamBuffer[0],
+                 size,
+                 streamable->getBitrate());
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+void engine::Music::doRefresh(const boost::system::error_code & error, const std::shared_ptr<Streamable> & streamable)
+{
+  assert(_strand.running_in_this_thread());
+
+  if(!error)
+  {
+    BOOST_LOG_TRIVIAL(info) << "Ready to refresh";
+    bool reschedule = true;
+
+    int processed;
+    alGetSourcei(_source, AL_BUFFERS_PROCESSED, &processed);
+
+    while(processed--)
+    {
+      BOOST_LOG_TRIVIAL(info) << "Streaming buffer";
+      ALuint buffer;
+      alSourceUnqueueBuffers(_source, 1, &buffer);
+      reschedule = doStream(buffer, streamable);
+      alSourceQueueBuffers(_source, 1, &buffer);
+    }
+
+    if(reschedule)
+    {
+      _timer.expires_after(_bufferRefreshInterval);
+      _timer.async_wait(std::bind(&Music::doRefresh, this, std::placeholders::_1, streamable));
+    }
+  }
 }

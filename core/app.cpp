@@ -13,8 +13,10 @@ engine::App::App():
   _desc("Options"),
   _graphics(false),
   _audio(false),
+  _asio(false),
   _resX(0),
   _resY(0),
+  _nbAsioThreads(0),
   _clock(std::make_shared<RtClock>()),
   _window(nullptr, SDL_DestroyWindow),
   _glContext(nullptr, SDL_GL_DeleteContext),
@@ -32,6 +34,8 @@ engine::App::~App()
   {
     TTF_Quit();
   }
+
+  stopAsio();
 }
 
 engine::App & engine::App::enableGraphics()
@@ -50,6 +54,16 @@ engine::App & engine::App::enableGraphics()
 engine::App & engine::App::enableAudio()
 {
   _audio = true;
+
+  return *this;
+}
+
+engine::App & engine::App::enableAsio()
+{
+  _asio = true;
+
+  _desc.add_options()
+    ("threads", po::value<unsigned int>(&_nbAsioThreads)->default_value(4), "Number of working threads");
 
   return *this;
 }
@@ -76,12 +90,22 @@ bool engine::App::run(int argc, char ** argv)
     BOOST_LOG_TRIVIAL(info) << "Init logging";
     engine::setLogLevel(_vm.count("verbose"));
 
+    // Asio
+    if(_asio)
+    {
+      initAsio();
+    }
+
     // Graphics
     if(_graphics)
     {
       initGraphics();
     }
+
+    // Fonts
     initTTF();
+
+    // Audio
     if(_audio)
     {
       initAudio();
@@ -124,6 +148,40 @@ ALCdevice * engine::App::audioDevice()
 ALCcontext * engine::App::audioContext()
 {
   return _alcContext.get();
+}
+
+boost::asio::io_context * engine::App::asioContext()
+{
+  return _asioContext.get();
+}
+
+void engine::App::stopAsio()
+{
+  if(_asio)
+  {
+    asioContext()->stop();
+    for(auto && thread : _asioThreads)
+    {
+      thread.join();
+    }
+    _asioThreads.clear();
+  }
+}
+
+void engine::App::initAsio()
+{
+  BOOST_LOG_TRIVIAL(info) << "Init threads";
+
+  _asioContext = std::make_shared<boost::asio::io_context>();
+  _workGuard = std::make_shared<work_guard>(_asioContext->get_executor());
+
+  for (unsigned int index = 0; index < _nbAsioThreads; ++index)
+  {
+    _asioThreads.push_back(std::thread([this](){ _asioContext->run(); }));
+    pthread_setname_np(_asioThreads.back().native_handle(), "asio");
+  }
+
+  BOOST_LOG_TRIVIAL(info) << "Created " << _nbAsioThreads << " work threads";
 }
 
 void engine::App::initGraphics()

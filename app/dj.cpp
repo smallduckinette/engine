@@ -18,12 +18,14 @@ int main(int argc, char ** argv)
     app.add_options()
       ("file,f", po::value<std::filesystem::path>(&audioFile), "Ogg/Vorbis audio file");
 
-    app.enableAudio();
+    app
+      .enableAudio()
+      .enableAsio();
 
     if(app.run(argc, argv))
     {
       auto streamable = std::make_shared<engine::VorbisStreamable>(audioFile);
-      engine::Music music;
+      engine::Music music(app.asioContext());
       music.play(streamable);
 
       std::string command;
@@ -32,6 +34,8 @@ int main(int argc, char ** argv)
         std::getline(std::cin, command);
       }
       while(command != "q");
+
+      app.stopAsio();
     }
 
     return 0;

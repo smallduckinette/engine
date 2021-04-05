@@ -60,6 +60,11 @@ int engine::VorbisStreamable::getBitrate() const
   return _vorbisInfo->rate;
 }
 
+int engine::VorbisStreamable::getNominalBitrate() const
+{
+  return _vorbisInfo->bitrate_nominal;
+}
+
 int engine::VorbisStreamable::getNumChannels() const
 {
   return _vorbisInfo->channels;
